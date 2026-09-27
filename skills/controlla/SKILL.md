@@ -30,7 +30,8 @@ Exit 1 se c'è almeno un errore. I codici:
 | `campo-mancante` | avviso | a una voce manca un campo obbligatorio | completala se l'informazione si trova (graphify, report, codice), altrimenti segnalala |
 | `id-mancante` | avviso | numeri saltati in un registro | di solito una voce cancellata: cerca in `git log -S '<ID>'` e ripristinala con il suo stato |
 | `sezione` | avviso | una voce chiusa sta fra le aperte | spostala nella sezione dei chiusi |
-| `percorso` | avviso | un file citato non esiste | file spostato (aggiorna la citazione) o proposto (lascia, e se è in una voce aperta va bene così) |
+| `percorso` | avviso | un file citato non esiste | file spostato: aggiorna la citazione. File proposto da una voce aperta o di un altro repo: aggiungilo a `percorsi_ignora` nella configurazione |
+| `esito-non-citato` | avviso | un esperimento negativo, abbandonato o inconcludente, o un'ipotesi smentita, non compare nell'ufficiale | una riga in «Strade scartate», «Dove potremmo sbagliare» o «Cosa non abbiamo capito» secondo METODO.md, «Cosa vuol dire l'esito» |
 | `ufficiale-vecchio`, `ufficiale-data` | avviso | i registri sono cambiati dopo l'ultimo aggiornamento dell'ufficiale | `/research-flow:stato` |
 | `graphify` | avviso | documenti cambiati dopo l'ultimo aggiornamento del grafo | la skill graphify con `--update` |
 
@@ -53,8 +54,11 @@ Poi rilancia `check` finché gli errori sono zero.
 Leggili a occhio sulle voci cambiate di recente (`git diff` e `git log -p --since=<ultima
 modifica dell'ufficiale> -- <dir>/`):
 
-- ogni esperimento **negativo o abbandonato** e ogni **ipotesi smentita** ha la sua riga in
-  «Strade scartate» dell'ufficiale;
+- ogni esperimento negativo o abbandonato e ogni ipotesi smentita citati nell'ufficiale (lo
+  controlla lo script) stanno **nella sezione giusta**: un'alternativa bocciata in «Strade
+  scartate», una scelta in vigore messa in dubbio in «Dove potremmo sbagliare»;
+- la domanda di ogni esperimento concluso di recente è scritta dalla parte dell'idea, così che
+  `positivo` voglia dire «regge»;
 - le ipotesi con impatto alto sono in «Dove potremmo sbagliare»;
 - le voci citano il codice con file e riga che esistono ancora (per le voci aperte: una riga
   spostata va aggiornata);

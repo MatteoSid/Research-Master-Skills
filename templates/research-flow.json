@@ -8,9 +8,9 @@
     "da_fare": {"file": "da_fare.md", "prefisso": "TODO"}
   },
   "ufficiale": "stato_progetto.md",
-  "fonti": [],
   "specchi": [],
   "vivi": ["fonti/**/*.md", "misure/**/*.md"],
+  "percorsi_ignora": [],
   "prefissi_esterni": [],
   "graphify": true
 }

@@ -8,7 +8,7 @@ argument-hint: "[leggi | <motivo dell'aggiornamento>]"
 
 Prima leggi `${CLAUDE_PLUGIN_ROOT}/METODO.md`, sezione «Il documento ufficiale», e
 `.research-flow.json` (`ufficiale` è il file, `specchi` i documenti da allineare). Lo script è
-`${CLAUDE_PLUGIN_ROOT}/scripts/registri.py`.
+`${CLAUDE_PLUGIN_ROOT}/scripts/registri.py` (`registri.py` qui sotto).
 
 ## Il principio
 
@@ -43,8 +43,8 @@ e segnala se l'ufficiale è indietro rispetto ai registri.
 
 Se cambia una scelta in vigore, o se l'ultima fotografia in `storico/` ha più di qualche
 settimana, copia l'ufficiale di oggi in `storico/<nome dell'ufficiale senza .md>_<GG-MM-AAAA>.md`
-**prima** di toccarlo. Per aggiornamenti di contorno (una riga in «Strade scartate», un TODO
-fatto) non serve.
+**prima** di toccarlo, con in testa l'avviso di fotografia (METODO.md, «Le fotografie»). Per
+aggiornamenti di contorno (una riga in «Strade scartate», un TODO fatto) non serve.
 
 ## 3. Riscrivi
 
@@ -60,19 +60,16 @@ progetto. Sezione per sezione, dove prendere il contenuto:
 | 4. Cosa è da testare | `IP` aperte che reggono le scelte della §2 (prima quelle ad alto impatto), `ESP` in corso e i proposti più importanti |
 | 5. Cosa manca | `TODO` P0 e P1 non fatti, per fase |
 | 6. Cosa non abbiamo capito | `ESP` inconcludenti, domande aperte alle fonti che bloccano qualcosa, `DUB` aperti che toccano i risultati, contraddizioni fra fonti |
-| 7. Strade scartate | **ogni** `ESP` negativo o abbandonato e **ogni** `IP` smentita: nessuna esclusa, una riga ciascuna, con «si riprova se…» |
-| 8. Dove potremmo sbagliare | `IP` con impatto alto, rischi noti che i dati non misurano |
+| 7. Strade scartate | **ogni** `ESP` negativo su un'alternativa, **ogni** `ESP` abbandonato e **ogni** `IP` smentita: nessuna esclusa, una riga ciascuna, con «si riprova se…» |
+| 8. Dove potremmo sbagliare | `IP` con impatto alto, `ESP` negativi su una scelta in vigore, rischi noti che i dati non misurano |
 | 9. Prossimi passi | in ordine, dai TODO e dalla roadmap del progetto |
 | 10. Registro delle modifiche | le righe esistenti **restano tutte**; aggiungi in alto quella di oggi, con la fonte (issue, ESP, fonte esterna) |
 
-Per la §7 fai il controllo incrociato, perché è quella che si dimentica:
-
-```bash
-python3 registri.py riepilogo | python3 -c "import json,sys; e=json.load(sys.stdin)['esiti']; print(e.get('negativo',[]), e.get('abbandonato',[]))"
-grep -n '→ VER-' <dir>/<file delle ipotesi>
-```
-
-Ogni ID che esce da qui deve comparire nella tabella delle strade scartate.
+Le §6-§8 sono quelle che si dimenticano. Il controllo incrociato lo fa `registri.py check` al
+passo 5: ogni esperimento negativo, abbandonato o inconcludente e ogni ipotesi smentita deve
+comparire nell'ufficiale, altrimenti dà l'avviso `esito-non-citato`. Lo script controlla che l'ID
+ci sia, non che stia nella sezione giusta: quello lo controlli tu con la regola di METODO.md
+(alternativa bocciata → §7, scelta in vigore messa in dubbio → §8 o §6).
 
 In testa: `**Aggiornato al GG-MM-AAAA.**` con la data di oggi.
 

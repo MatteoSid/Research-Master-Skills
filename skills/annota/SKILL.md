@@ -77,12 +77,13 @@ Per tipo, quello che non deve mancare:
 
 **`esito ESP-NNN`.** È il caso più importante, e il più facile da fare male.
 
-1. L'esito è una delle quattro parole: `positivo`, `negativo`, `inconcludente`, `abbandonato`.
-   Si decide **confrontando il risultato con il criterio scritto quando l'esperimento è stato
-   proposto**, non con quello che ci si aspettava dopo. Se il criterio non c'era, dillo nella
-   voce.
-2. Il report deve esistere in `misure/` (modello `templates/report.md`). Se non c'è, scrivilo o
-   chiedi all'utente dove sta: un esperimento concluso senza report è un errore per `check`.
+1. L'esito è una delle quattro parole: `positivo`, `negativo`, `inconcludente`, `abbandonato`,
+   con il significato di METODO.md, «Cosa vuol dire l'esito»: `positivo` vuol dire che l'idea
+   messa alla prova regge. Si decide **confrontando il risultato con il criterio scritto quando
+   l'esperimento è stato proposto**, non con quello che ci si aspettava dopo. Se il criterio non
+   c'era, dillo nella voce.
+2. Il report deve esistere in `misure/` (modello `templates/report.md`). Se non c'è, scrivilo, o
+   chiedi all'utente dove sta il risultato e scrivilo nel campo Report: senza, `check` avvisa.
 3. «Cosa ne abbiamo tratto»: cosa cambia, e per un esito negativo o abbandonato **cosa non
    rifare e a quali condizioni avrebbe senso riprovare**. Non addolcire un fallimento: «non
    funziona con questi dati per questo motivo» è l'informazione che serve.
@@ -106,7 +107,10 @@ Segui la tabella «La propagazione» di METODO.md. In pratica, dopo ogni voce ch
   quando parte l'esperimento; il TODO che l'esperimento chiude; il dubbio che una misura risolve);
 - cambia lo stato del progetto? Allora va nel documento ufficiale:
   - esperimento **positivo** → «Cosa funziona», e «Le scelte in vigore» se cambia una scelta;
-  - **negativo o abbandonato**, ipotesi **smentita** → una riga in «Strade scartate»;
+  - **negativo** su un'alternativa, **abbandonato**, ipotesi **smentita** → una riga in «Strade
+    scartate», con «si riprova se…»;
+  - **negativo** su una scelta in vigore → «Dove potremmo sbagliare» (o «Cosa non abbiamo
+    capito»), e un TODO per rimediare;
   - **inconcludente** → «Cosa non abbiamo capito»;
   - ipotesi con impatto alto → «Dove potremmo sbagliare»;
   - ogni cambiamento di una scelta → una riga nel registro delle modifiche e la data in testa.

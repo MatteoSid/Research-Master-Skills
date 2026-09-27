@@ -57,6 +57,8 @@ DEFAULT_CONFIG = {
     # cartelle di `dir` che si tengono aggiornate (i percorsi citati devono esistere);
     # brainstorm, ricerche iniziali e storico citano file proposti o spariti, e non si controllano
     "vivi": ["fonti/**/*.md", "misure/**/*.md"],
+    # percorsi citati che non devono esistere: file proposti, file di altri repo (glob)
+    "percorsi_ignora": [],
 }
 
 TEXT_EXT = {".md", ".py", ".ts", ".tsx", ".js", ".jsx", ".sql", ".yml", ".yaml", ".txt", ".json", ".toml"}
@@ -441,12 +443,21 @@ def controlla(root: Path, cfg: dict) -> list[Problema]:
             P.append(Problema("avviso", "sezione", f"{v.file}:{v.riga}", f"{v.id} è concluso ma sta in «{v.sezione}»"))
 
     # 8. percorsi citati fra backtick che non esistono, solo nei documenti vivi
+    # il registro delle modifiche dell'ufficiale cita di proposito nomi che non esistono più
+    uff_path = base / cfg["ufficiale"]
     for doc in documenti_vivi(root, cfg):
         rel_doc = str(doc.relative_to(root))
+        storico = False
         for n, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), 1):
+            if doc == uff_path and re.match(r"^#{1,3}\s", line):
+                storico = bool(re.search(r"registro delle modifiche", line, re.I))
+            if storico:
+                continue
             for m in FILE_LIKE.finditer(line):
                 cand = m.group(1).rstrip(".,;")
                 if cand.startswith(("http", "~", "$", "/", "..")) or "<" in cand or "{" in cand:
+                    continue
+                if any(fnmatch.fnmatch(cand, g) for g in cfg.get("percorsi_ignora", [])):
                     continue
                 if not esiste(cand, [doc.parent, base, root], root):
                     P.append(Problema("avviso", "percorso", f"{rel_doc}:{n}", f"`{cand}` non esiste"))
@@ -470,7 +481,22 @@ def controlla(root: Path, cfg: dict) -> list[Problema]:
             if dopo:
                 P.append(Problema("avviso", "ufficiale-vecchio", str(uff.relative_to(root)), f"aggiornato al {d:%d-%m-%Y}, ma dopo sono cambiati {', '.join(dopo)}: /research-flow:stato"))
 
-    # 10. grafo vecchio
+    # 10. le strade scartate e le cose non capite arrivano nell'ufficiale
+    if uff.exists():
+        testo_uff = uff.read_text(encoding="utf-8")
+        citati = set(id_pattern(prefissi).findall(testo_uff))
+        for v in voci:
+            if v.tipo == "esperimenti" and esito(v) in ("negativo", "abbandonato", "inconcludente") and v.id not in citati:
+                P.append(Problema("avviso", "esito-non-citato", f"{v.file}:{v.riga}", f"{v.id} ({esito(v)}) non compare in {cfg['ufficiale']}: va in «Strade scartate», «Dove potremmo sbagliare» o «Cosa non abbiamo capito»"))
+        if pref_ip and pref_ver:
+            for v in voci:
+                if v.tipo != "verificato" or not re.search(r"smentit", v.testo, re.I):
+                    continue
+                ips = re.findall(rf"era\s+({re.escape(pref_ip)}-\d+)", v.testo)
+                if ips and v.id not in citati and not any(i in citati for i in ips):
+                    P.append(Problema("avviso", "esito-non-citato", f"{v.file}:{v.riga}", f"{v.id} smentisce {', '.join(ips)} ma non compare in {cfg['ufficiale']} («Strade scartate»)"))
+
+    # 11. grafo vecchio
     for rel in stale(root, cfg):
         P.append(Problema("avviso", "graphify", rel, "cambiato dopo l'ultimo aggiornamento del grafo"))
     return P

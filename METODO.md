@@ -44,7 +44,7 @@ ruolo, e i registri lo citano:
 
 | Cartella | Cosa contiene |
 |---|---|
-| `fonti/` | le informazioni che arrivano da fuori (persone, documenti, messaggi): una per file, datata, con le parole originali |
+| `fonti/` | le informazioni che arrivano da fuori (persone, documenti, documentazione, articoli, pagine web, messaggi): un file per fonte e per data, con il testo originale, e l'indice delle fonti `fonti/README.md` |
 | `misure/` | i report di misura e degli esperimenti: `report_<tema>_<GG-MM-AAAA>.md`, ognuno con domanda, metodo, risultati, limiti |
 | `storico/` | le fotografie dei documenti ufficiali superati: `stato_progetto_<data>.md` |
 | `riferimenti/` | documentazione tecnica di terzi |
@@ -62,7 +62,7 @@ Dentro `dir` i percorsi si scrivono **relativi a `dir`** (`misure/report_x_2026-
 |---|---|
 | «Questo pezzo di codice forse è sbagliato / fragile / approssimato» | dubbi |
 | «Stiamo dando per scontato che…», «abbiamo scelto X ma non sappiamo se è giusto» | ipotesi |
-| «Tizio ci ha detto che…» | la parola esatta in `fonti/`, il fatto in verificato (fonte esterna) |
+| «Una persona, un documento, una pagina dice che…» | il testo in `fonti/`; il fatto in verificato (fonte esterna), o un'ipotesi se la fonte è poco affidabile |
 | «Abbiamo misurato che…» | il report in `misure/`, il fatto in verificato (misura), l'esperimento in esperimenti |
 | «Proviamo a vedere se…» | esperimenti, stato `proposto`, con il criterio deciso adesso |
 | «Abbiamo provato e non funziona» | esperimenti, esito `negativo`: **soprattutto questo** |
@@ -111,18 +111,80 @@ da_fare   da fare ──► in corso (#issue) ──► fatto (#issue, data)
 - Le voci chiuse si spostano nella sezione dei chiusi del loro registro («Risolti», «Conclusi»,
   «Fatto»), le più recenti in alto.
 
+### Cosa vuol dire l'esito
+
+**La domanda di un esperimento si scrive come l'idea che mettiamo alla prova, in modo che «sì»
+voglia dire «l'idea regge».** Così l'esito si legge senza rileggere la domanda:
+
+| Esito | Vuol dire |
+|---|---|
+| `positivo` | sì: l'idea regge, con i numeri che lo mostrano |
+| `negativo` | no: l'idea non regge. È un risultato, non un fallimento dell'esperimento |
+| `inconcludente` | i dati non bastano per rispondere, o la risposta cambia con dettagli di metodo |
+| `abbandonato` | interrotto prima di rispondere; il motivo è obbligatorio (ha risposto una fonte, i dati non esistono, non serve più) |
+
+Un esperimento che cerca un **problema** si scrive dalla parte della scelta che rischia: non «il
+timeout interrompe operazioni che sarebbero andate a buon fine?» (dove «sì» è una cattiva
+notizia), ma «il timeout interrompe solo operazioni che sarebbero fallite comunque?». Un
+`positivo` deve sempre poter finire in «Cosa funziona».
+
+Dove finisce un esito `negativo` nel documento ufficiale dipende da cosa metteva alla prova:
+
+- un'**alternativa** che stavamo valutando (un riferimento diverso, un filtro nuovo) → «Strade
+  scartate»: non la prendiamo;
+- una **scelta in vigore** (la definizione che usiamo, un parametro già in produzione) → «Dove
+  potremmo sbagliare» o «Cosa non abbiamo capito», con un TODO per rimediare. La scelta resta
+  finché non ne abbiamo una migliore, ma non si presenta più come verificata.
+
+### Esperimenti ricostruiti
+
+Quando si adotta il metodo su un progetto già avviato, gli esperimenti fatti prima si
+ricostruiscono dai report, dalle voci verificate e dalla storia di git. Valgono le stesse regole,
+con tre accortezze:
+
+- l'**esito si decide dal report**, mai a memoria; se il report non basta per decidere, è
+  `inconcludente`;
+- il criterio quasi sempre non c'è: la voce lo dice, nel Metodo («Nessun criterio scritto prima»),
+  invece di inventarne uno che i risultati confermano per costruzione;
+- il **Report** è il report in `misure/` se c'è; per le misure che non ne hanno uno (una tabella
+  in una fonte, un numero nel `README.md`, uno script di test) è il posto dove sta il risultato,
+  detto esplicitamente: «nessun report in `misure/`: la misura è in …».
+
+Il campo facoltativo **Origine** dice da dove viene l'esperimento quando aveva un altro nome («era
+E7 in `brainstorm/esperimenti.md`», «TODO-042»): chi arriva dal nome vecchio trova il nuovo.
+
 ### Due livelli di fiducia
 
 Nel registro verificato si tengono distinti:
 
-- **fonte esterna**: un fatto riferito da qualcuno (con nome, data e codice della risposta).
-  È la fonte migliore che abbiamo su ciò che non possiamo misurare, ma è di seconda mano;
+- **fonte esterna**: un fatto che viene da una fonte (con il nome della fonte, la data e il codice
+  dell'informazione). È quello che abbiamo su ciò che non possiamo misurare, e vale quanto
+  l'affidabilità della fonte: una fonte poco affidabile non produce fatti, ma ipotesi;
 - **misura**: un risultato riproducibile sui nostri dati, con lo script, i dati e la data.
   Vale per i dati su cui è stata fatta: se i dati cambiano molto si rifà, e la voce nuova
   sostituisce la vecchia citandola.
 
 Le verifiche sul codice («il ciclo di import non scatta a runtime») sono misure sul codice, con
 file e simbolo.
+
+### Le fonti
+
+Una fonte è **qualunque informazione che non abbiamo prodotto noi**: una persona che risponde o
+racconta, un documento, una documentazione tecnica, un articolo, una pagina web, un messaggio, uno
+screenshot, un dataset di terzi. Non esiste un elenco di fonti deciso all'inizio del progetto: le
+fonti si aggiungono quando arrivano.
+
+**Chi decide.** Una fonte si aggiunge quando lo decide l'utente, o quando lo decide Claude di sua
+iniziativa. In questo caso Claude lo dice, con il motivo; nel dubbio chiede. Si registra
+un'informazione che viene da fuori, tocca i registri (un'ipotesi, una domanda aperta, un fatto,
+una scelta) e si può ricontrollare (c'è il testo, il documento o il link, e una data). Il
+dettaglio è nella skill `fonte`.
+
+**L'indice.** `fonti/README.md` ha una riga per fonte: che cos'è, perché ne sa qualcosa,
+l'**affidabilità** (alta, media, bassa, con il motivo), i file, e chi l'ha aggiunta e quando.
+L'affidabilità decide dove finisce quello che la fonte dice: in verificato come fatto, o fra le
+ipotesi. Una fonte non si cancella: se si rivela inaffidabile, la riga lo dice, e i fatti che
+reggeva tornano ipotesi.
 
 ## La propagazione
 
@@ -131,9 +193,9 @@ un passo che non serve si salta, ma si salta sapendolo.
 
 | Quando… | …si aggiorna |
 |---|---|
-| arriva un'informazione da una fonte | il file in `fonti/` con le parole originali; i fatti in verificato; le ipotesi che tocca (confermate → VER, indebolite o rafforzate → nota); la domanda tolta da da_fare «Da chiedere a…»; l'ufficiale se cambia una scelta |
+| arriva un'informazione da una fonte | se la fonte è nuova, la sua riga nell'indice `fonti/README.md`; il file in `fonti/` con il testo originale; i fatti in verificato; le ipotesi che tocca (confermate → VER, indebolite o rafforzate → nota); la domanda tolta da da_fare «Da chiedere a…»; l'ufficiale se cambia una scelta |
 | si propone un esperimento | esperimenti (`proposto`, con domanda, metodo e criterio); le ipotesi che verifica passano a `in verifica (ESP-NNN)` quando parte |
-| si conclude un esperimento | il report in `misure/`; l'esperimento `concluso` con esito; il fatto in verificato; le ipotesi confermate o smentite; i TODO chiusi o nati; l'ufficiale: «Cosa funziona» se positivo, «Strade scartate» se negativo o abbandonato, «Cosa non abbiamo capito» se inconcludente |
+| si conclude un esperimento | il report in `misure/`; l'esperimento `concluso` con esito; il fatto in verificato; le ipotesi confermate o smentite; i TODO chiusi o nati; l'ufficiale: «Cosa funziona» se positivo; se negativo «Strade scartate» (un'alternativa) o «Dove potremmo sbagliare» (una scelta in vigore); «Strade scartate» se abbandonato; «Cosa non abbiamo capito» se inconcludente |
 | il codice introduce un parametro scelto da noi | ipotesi (con dove lo usiamo nel codice) |
 | lavorando sul codice nasce un dubbio | dubbi, con file e riga, **prima** di andare avanti |
 | si chiude una issue | i TODO che chiude passano a «Fatto»; i dubbi che risolve a «Risolti»; l'ufficiale se cambia una scelta |
@@ -156,17 +218,24 @@ contesto del dominio, dentro «Le scelte in vigore» o prima):
 5. **Cosa manca**: i TODO P0 e P1, per fase;
 6. **Cosa non abbiamo capito**: le domande aperte, gli esiti inconcludenti, i comportamenti che
    non sappiamo spiegare;
-7. **Strade scartate**: ogni esperimento negativo o abbandonato e ogni ipotesi smentita, in una
-   riga con il motivo e la voce che lo documenta. **È la sezione che impedisce di rifare lo
-   stesso errore**;
-8. **Dove potremmo sbagliare**: le ipotesi con impatto alto e i rischi che i dati non misurano;
+7. **Strade scartate**: ogni alternativa che un esperimento ha bocciato o abbandonato e ogni
+   ipotesi smentita, in una riga con il motivo, la voce che lo documenta e a quali condizioni si
+   riprova. **È la sezione che impedisce di rifare lo stesso errore**;
+8. **Dove potremmo sbagliare**: le ipotesi con impatto alto, le scelte in vigore che un
+   esperimento ha messo in dubbio, i rischi che i dati non misurano;
 9. **Prossimi passi**: in ordine;
 10. **Registro delle modifiche**: una riga per ogni cambiamento di una scelta, con data e fonte,
     le più recenti in alto.
 
 In testa: `**Aggiornato al GG-MM-AAAA.**`. `registri.py check` avvisa quando un registro è
-cambiato dopo quella data. Quando cambia una scelta importante, prima di riscrivere si salva la
-fotografia della versione vecchia in `storico/stato_progetto_<data>.md`.
+cambiato dopo quella data, e quando un esperimento negativo, abbandonato o inconcludente, o
+un'ipotesi smentita, non compare nell'ufficiale.
+
+**Le fotografie.** Quando cambia una scelta importante, prima di riscrivere si salva la versione
+vecchia in `storico/stato_progetto_<GG-MM-AAAA>.md`: copiata com'è, con in testa solo un avviso
+(«Fotografia del GG-MM-AAAA, non più aggiornata: la versione in vigore è `stato_progetto.md`»,
+e la mappa delle sezioni se sono cambiate). I documenti in `storico/` non si aggiornano più:
+i percorsi e i riferimenti vecchi lì dentro sono giusti così.
 
 ## Graphify
 
@@ -182,6 +251,9 @@ Se il repo ha un grafo (`graphify-out/graph.json`), il grafo è il punto di part
   cambiati documenti o immagini serve l'estrazione semantica, quindi la skill graphify con
   `--update` (`/graphify . --update`). `registri.py stale` dice quali documenti il grafo non ha
   ancora visto.
+
+Il grafo dice **cosa è collegato a cosa**, non lo stato di una voce: se un esperimento è già
+stato fatto, se un'ipotesi è chiusa, lo dicono i registri (`registri.py find` e `riepilogo`).
 
 L'aggiornamento del grafo fa parte del lavoro: si fa prima di chiudere, non si rimanda.
 
