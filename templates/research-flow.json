@@ -1,0 +1,16 @@
+{
+  "dir": "research",
+  "registri": {
+    "dubbi": {"file": "dubbi_implementazione.md", "prefisso": "DUB"},
+    "ipotesi": {"file": "ipotesi_da_verificare.md", "prefisso": "IP"},
+    "verificato": {"file": "verificato.md", "prefisso": "VER"},
+    "esperimenti": {"file": "esperimenti.md", "prefisso": "ESP"},
+    "da_fare": {"file": "da_fare.md", "prefisso": "TODO"}
+  },
+  "ufficiale": "stato_progetto.md",
+  "fonti": [],
+  "specchi": [],
+  "vivi": ["fonti/**/*.md", "misure/**/*.md"],
+  "prefissi_esterni": [],
+  "graphify": true
+}
