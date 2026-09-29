@@ -88,9 +88,12 @@ registri nel suo `docs_paths`.
 ## Installazione
 
 ```
-/plugin marketplace add ~/projects2/research-flow
+/plugin marketplace add https://github.com/MatteoSid/Research-Master-Skills.git
 /plugin install research-flow@research-flow
 ```
+
+Il `marketplace add` clona con le credenziali git della macchina, quindi va bene anche l'SSH:
+`git@github.com:MatteoSid/Research-Master-Skills.git`.
 
 ## Licenza
 
