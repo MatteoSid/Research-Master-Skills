@@ -36,8 +36,9 @@ Il regolamento completo, con il ciclo di vita delle voci e la tabella di propaga
 | `/research-flow:fonte` | registra un'informazione esterna (una persona, un documento, una documentazione, un articolo, una pagina, un messaggio, un dataset), tenendo separato quello che dice la fonte da quello che ne deduciamo, e la propaga a fatti, ipotesi, domande aperte e documento ufficiale. Se aggiungere una fonte lo decide l'utente, o Claude di sua iniziativa dicendolo; le fonti stanno nell'indice `fonti/README.md` con la loro affidabilità |
 | `/research-flow:stato` | riscrive la versione ufficiale dai registri, con la fotografia della versione vecchia in `storico/`, e allinea i documenti specchio. Con `leggi` risponde «a che punto siamo?» senza scrivere |
 | `/research-flow:controlla` | controllo di coerenza: ID doppi o inesistenti, ipotesi chiuse male, esperimenti senza esito, percorsi rotti, ufficiale o grafo vecchi. Corregge quello che è meccanico |
+| `/research-flow:pagina` | la pagina dei registri nel browser: voci aperte e chiuse, esiti degli esperimenti, lavoro per fase, ipotesi per impatto, domande alle fonti, e ogni voce con la descrizione completa, dove ogni ID è un link alla sua voce. Scrive un file, o con `serve` tiene acceso un server locale (anche in rete con `--rete`) che la rifà a ogni ricarica |
 
-## Lo script
+## Gli script
 
 `scripts/registri.py` (solo libreria standard, Python 3.9+) non scrive mai: le skill lo usano
 per non contare gli ID a mano e per i controlli. Si può lanciare anche da solo, per esempio in
@@ -49,6 +50,15 @@ python3 scripts/registri.py find IP-003       # dove è definita e chi la cita, 
 python3 scripts/registri.py riepilogo         # voci per registro e stato, esiti degli esperimenti (JSON)
 python3 scripts/registri.py check             # controlli di coerenza, exit 1 se ci sono errori
 python3 scripts/registri.py stale             # documenti che graphify non ha ancora visto
+```
+
+`scripts/pagina.py` (stessa libreria, stesse regole) fa la pagina dei registri di
+`/research-flow:pagina`:
+
+```
+python3 scripts/pagina.py                          # research-flow.html nella radice del repo
+python3 scripts/pagina.py --serve                  # http://localhost:8099, rifatta a ogni ricarica
+python3 scripts/pagina.py --serve --host 0.0.0.0   # raggiungibile dalla rete, senza password
 ```
 
 ## Configurazione

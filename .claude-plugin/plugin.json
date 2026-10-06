@@ -1,7 +1,7 @@
 {
   "name": "research-flow",
   "displayName": "Research Flow",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Documentazione esplorativa per progetti che non sanno ancora dove andranno: registri di dubbi, ipotesi, fatti verificati, esperimenti (compresi quelli falliti) e cose da fare, con ID che si citano a vicenda, e una versione ufficiale del progetto che dice cosa funziona, cosa è da testare, cosa manca e cosa non si è capito. Si appoggia a graphify.",
   "author": {
     "name": "Matteo Donato"
