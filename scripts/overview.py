@@ -6,11 +6,11 @@ e fa una pagina HTML senza dipendenze: quante voci sono aperte e chiuse per regi
 degli esperimenti, il lavoro per fase, le ipotesi aperte per impatto, e ogni voce con la sua
 descrizione completa. Ogni ID è un link alla sua voce, e ogni voce dice chi la cita.
 
-    pagina.py                              scrive research-flow.html nella radice del repo
-    pagina.py --out <file>                 scrive la pagina altrove
-    pagina.py --serve                      http://localhost:8099, rifatta dai registri a ogni ricarica
-    pagina.py --serve --host 0.0.0.0       raggiungibile dalla rete (senza password)
-    pagina.py --serve --port 9000
+    overview.py                              scrive research-flow.html nella radice del repo
+    overview.py --out <file>                 scrive la pagina altrove
+    overview.py --serve                      http://localhost:8099, rifatta dai registri a ogni ricarica
+    overview.py --serve --host 0.0.0.0       raggiungibile dalla rete (senza password)
+    overview.py --serve --port 9000
 
 Opzione comune: --root <dir> (default: la radice git della cartella corrente).
 Solo libreria standard, Python 3.9+.

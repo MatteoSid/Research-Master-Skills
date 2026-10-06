@@ -20,5 +20,5 @@ Quando usare le skill:
 | si chiude una issue | `/research-flow:annota fatto TODO-NNN #issue`, `risolto DUB-NNN` |
 | cambia una scelta, o qualcuno chiede «a che punto siamo?» | `/research-flow:stato` (`leggi` per rispondere senza scrivere) |
 | prima di un commit che tocca `{dir}/` | `/research-flow:controlla` |
-| si vogliono vedere i registri nel browser, con le voci complete e gli ID cliccabili | `/research-flow:pagina` (`serve` per tenerla accesa e aggiornata) |
+| si vogliono vedere i registri nel browser, con le voci complete e gli ID cliccabili | `/research-flow:overview` (`serve` per tenerla accesa e aggiornata) |
 {extra}

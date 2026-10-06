@@ -8,7 +8,7 @@
       "name": "research-flow",
       "source": "./",
       "description": "Documentazione esplorativa: registri di dubbi, ipotesi, fatti verificati, esperimenti (compresi quelli falliti) e cose da fare, e una versione ufficiale del progetto sempre allineata. Si appoggia a graphify.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "productivity",
       "keywords": ["research", "documentation", "experiments", "hypotheses", "graphify"]
     }
