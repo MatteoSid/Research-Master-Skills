@@ -529,6 +529,27 @@ def esiste(cand: str, bases: list[Path], root: Path) -> bool:
     return False
 
 
+def graphify_ignora(root: Path) -> list[str]:
+    """I pattern di `.graphifyignore` nella radice: i file che il grafo esclude apposta."""
+    f = root / ".graphifyignore"
+    if not f.exists():
+        return []
+    righe = (r.strip() for r in f.read_text(encoding="utf-8").splitlines())
+    return [r for r in righe if r and not r.startswith("#")]
+
+
+def ignorato(rel: str, patterns: list[str]) -> bool:
+    """Sintassi .gitignore ridotta: `dir/` esclude la cartella, con `/` il pattern parte dalla radice."""
+    for pat in patterns:
+        if pat.endswith("/"):
+            d = pat.strip("/")
+            if rel.startswith(d + "/") if "/" in d else d in rel.split("/")[:-1]:
+                return True
+        elif fnmatch.fnmatch(rel, pat.lstrip("/")) or ("/" not in pat and fnmatch.fnmatch(rel.rsplit("/", 1)[-1], pat)):
+            return True
+    return False
+
+
 def stale(root: Path, cfg: dict) -> list[str]:
     man = root / "graphify-out" / "manifest.json"
     if not cfg.get("graphify", True) or not man.exists():
@@ -536,11 +557,14 @@ def stale(root: Path, cfg: dict) -> list[str]:
     manifest = json.loads(man.read_text(encoding="utf-8"))
     base = root / cfg["dir"]
     docs = [p for p in base.rglob("*.md")] + [root / "README.md", root / "CLAUDE.md"]
+    esclusi = graphify_ignora(root)
     out = []
     for p in docs:
         if not p.exists():
             continue
         rel = str(p.relative_to(root))
+        if ignorato(rel, esclusi):
+            continue
         entry = manifest.get(rel)
         if entry is None or p.stat().st_mtime > entry.get("mtime", 0) + 1:
             out.append(rel)

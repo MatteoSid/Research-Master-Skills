@@ -239,18 +239,26 @@ i percorsi e i riferimenti vecchi lì dentro sono giusti così.
 
 ## Graphify
 
-Se il repo ha un grafo (`graphify-out/graph.json`), il grafo è il punto di partenza:
+Se il repo ha un grafo (`graphify-out/graph.json`), il grafo collega le voci ai report, agli
+script e al codice. Fra una voce e l'altra si naviga meglio con `registri.py`:
 
 - **prima di aggiungere una voce** si cerca se esiste già o a cosa si collega:
-  `graphify query "<la cosa in parole>"`, poi `graphify explain "<concetto>"`. `registri.py find
-  <ID>` dice dove una voce è definita e chi la cita;
+  `registri.py find <ID>` per le voci nominate (definizione e tutte le citazioni, con la riga),
+  `grep` con le parole dei registri, poi `graphify query "<la cosa in parole>"` come aggiunta.
+  `graphify query` cerca per parole, non per significato: una voce descritta con altre parole
+  spesso non la trova. `graphify explain "<ID o simbolo>"` porta dalla voce trovata ai report e
+  al codice collegati;
 - **per citare il codice** in una voce (il campo «Dove» dei dubbi, «Dove la usiamo» delle
   ipotesi) si usano `graphify explain`/`graphify path` per trovare file e simbolo, poi si
   verifica la riga leggendo il file;
 - **dopo aver scritto**: `graphify update .` se è cambiato codice (solo AST, gratis); se sono
   cambiati documenti o immagini serve l'estrazione semantica, quindi la skill graphify con
   `--update` (`/graphify . --update`). `registri.py stale` dice quali documenti il grafo non ha
-  ancora visto.
+  ancora visto;
+- **le fotografie in `storico/` conviene escluderle dal grafo** con `storico/` (dal percorso del
+  repo, per esempio `research/storico/`) nel `.graphifyignore`: il grafo non distingue una
+  scelta superata da una in vigore, e ogni fotografia nuova costerebbe un'estrazione semantica.
+  `registri.py stale` salta i file esclusi da `.graphifyignore`.
 
 Il grafo dice **cosa è collegato a cosa**, non lo stato di una voce: se un esperimento è già
 stato fatto, se un'ipotesi è chiusa, lo dicono i registri (`registri.py find` e `riepilogo`).

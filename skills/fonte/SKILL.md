@@ -92,7 +92,9 @@ Per ogni informazione, nell'ordine:
 1. **È un fatto detto esplicitamente?** Una voce `VER-NNN` (`registri.py next verificato`) nella
    sezione delle fonti esterne: fatto, fonte con codice e data, cosa cambia. Se l'affidabilità
    della fonte è bassa, non è un fatto verificato: è un'ipotesi («Da dove: <fonte>, E3»).
-2. **Tocca un'ipotesi?** Cerca con `graphify query` e `grep` nel registro ipotesi.
+2. **Tocca un'ipotesi?** Cerca con `grep` nel registro ipotesi, con le parole dei registri e i
+   loro sinonimi, e con `graphify query` come aggiunta: il grafo cerca per parole, non per
+   significato. Sull'ipotesi trovata, `registri.py find` dice chi la cita.
    - la conferma o la smentisce esplicitamente → la voce VER dice «Confermata/Smentita (era
      IP-NNN)», l'ipotesi va a `→ VER-NNN`, riga in «Smentite o confermate»;
    - la rende più o meno probabile senza chiuderla → una riga nell'ipotesi («<fonte>, R12, del

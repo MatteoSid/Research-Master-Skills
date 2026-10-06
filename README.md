@@ -32,7 +32,7 @@ Il regolamento completo, con il ciclo di vita delle voci e la tabella di propaga
 | skill | cosa fa |
 |---|---|
 | `/research-flow:init` | prepara il repo: configurazione, documenti, cartelle, sezione del `CLAUDE.md`. Su un repo con registri già esistenti li adotta e migra i contenuti (esperimenti sparsi, documento ufficiale di un'altra forma) senza perdere niente |
-| `/research-flow:annota` | aggiunge una voce o ne cambia lo stato, dopo aver cercato con graphify se c'è già. Chiude gli esperimenti con il loro esito, sposta le ipotesi confermate o smentite in verificato, e propaga il cambiamento |
+| `/research-flow:annota` | aggiunge una voce o ne cambia lo stato, dopo aver cercato nei registri e con graphify se c'è già. Chiude gli esperimenti con il loro esito, sposta le ipotesi confermate o smentite in verificato, e propaga il cambiamento |
 | `/research-flow:fonte` | registra un'informazione esterna (una persona, un documento, una documentazione, un articolo, una pagina, un messaggio, un dataset), tenendo separato quello che dice la fonte da quello che ne deduciamo, e la propaga a fatti, ipotesi, domande aperte e documento ufficiale. Se aggiungere una fonte lo decide l'utente, o Claude di sua iniziativa dicendolo; le fonti stanno nell'indice `fonti/README.md` con la loro affidabilità |
 | `/research-flow:stato` | riscrive la versione ufficiale dai registri, con la fotografia della versione vecchia in `storico/`, e allinea i documenti specchio. Con `leggi` risponde «a che punto siamo?» senza scrivere |
 | `/research-flow:controlla` | controllo di coerenza: ID doppi o inesistenti, ipotesi chiuse male, esperimenti senza esito, percorsi rotti, ufficiale o grafo vecchi. Corregge quello che è meccanico |

@@ -1,6 +1,6 @@
 ---
 name: annota
-description: "Scrive nei registri della documentazione esplorativa: aggiunge una voce (dubbio sul codice, ipotesi, fatto verificato, esperimento, cosa da fare) o ne cambia lo stato — chiude un esperimento con il suo esito, anche e soprattutto se è fallito; sposta un'ipotesi confermata o smentita in verificato; segna un dubbio risolto o un TODO fatto — e propaga il cambiamento alle voci collegate. Cerca prima con graphify se la cosa è già scritta. Trigger: /research-flow:annota, «annota che…», «segna questo dubbio», «registra l'esperimento», «l'esperimento X è fallito», «questa ipotesi è smentita», «chiudi TODO-N», «abbiamo provato e non funziona», «tieni traccia di…»."
+description: "Scrive nei registri della documentazione esplorativa: aggiunge una voce (dubbio sul codice, ipotesi, fatto verificato, esperimento, cosa da fare) o ne cambia lo stato — chiude un esperimento con il suo esito, anche e soprattutto se è fallito; sposta un'ipotesi confermata o smentita in verificato; segna un dubbio risolto o un TODO fatto — e propaga il cambiamento alle voci collegate. Cerca prima nei registri e con graphify se la cosa è già scritta. Trigger: /research-flow:annota, «annota che…», «segna questo dubbio», «registra l'esperimento», «l'esperimento X è fallito», «questa ipotesi è smentita», «chiudi TODO-N», «abbiamo provato e non funziona», «tieni traccia di…»."
 argument-hint: "<cosa annotare, in parole> | esito ESP-N | risolto DUB-N | fatto TODO-N"
 ---
 
@@ -36,13 +36,21 @@ non si capisce dalla richiesta, chiedilo in una riga invece di indovinare.
 
 ## 2. Cerca se c'è già
 
-Prima di scrivere una voce nuova:
+Prima di scrivere una voce nuova, in quest'ordine:
 
 ```bash
-graphify query "<la cosa, in parole>"        # se esiste graphify-out/graph.json
-grep -n -i '<parola chiave>' <dir>/*.md
-python3 registri.py find <ID>                # per ogni ID che la richiesta nomina
+python3 registri.py find <ID>                # per ogni ID che la richiesta nomina: definizione e chi la cita
+grep -n -i '<parola chiave>' <dir>/*.md      # con le parole dei registri, e più di una
+graphify query "<la cosa, in parole>"        # se esiste graphify-out/graph.json, come aggiunta
+graphify explain "<ID o simbolo trovato>"    # dalla voce ai report, agli script e al codice
 ```
+
+`registri.py find` dà tutte le citazioni con file e riga; il grafo ne ha la gran parte, ma senza
+la riga. `graphify query` cerca per parole, non per significato: trova una voce solo se la
+descrivi con le parole con cui è scritta. Su un campione di 14 voci descritte con altre parole
+ne ha trovate 7 («ombra della candela» non trova la voce sui wick). Per questo il `grep` si fa
+con i termini dei registri, provando i sinonimi. Il grafo serve soprattutto dopo: con
+`graphify explain` sulla voce trovata arrivi ai report, agli script e al codice collegati.
 
 - se la voce **esiste già**, la aggiorni: non ne crei una seconda;
 - se esiste una voce **vicina**, la nuova la cita, e se serve la vicina cita la nuova;
