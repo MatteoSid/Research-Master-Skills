@@ -4,7 +4,8 @@
 Legge i registri con il parser di `registri.py` (gli stessi conteggi di `registri.py riepilogo`)
 e fa una pagina HTML senza dipendenze: quante voci sono aperte e chiuse per registro, gli esiti
 degli esperimenti, il lavoro per fase, le ipotesi aperte per impatto, e ogni voce con la sua
-descrizione completa. Ogni ID è un link alla sua voce, e ogni voce dice chi la cita.
+descrizione completa. Ogni ID è un link alla sua voce, e ogni voce dice chi la cita; fra le voci
+il collegamento apre la nota in una card sopra la pagina, con «Indietro» per tornare alla precedente.
 
     overview.py                              scrive research-flow.html nella radice del repo
     overview.py --out <file>                 scrive la pagina altrove
@@ -281,14 +282,62 @@ JS = """
     el.scrollIntoView({ block: 'start', behavior: lento ? 'smooth' : 'auto' });
     el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
   }
+  function salta(id) {
+    const el = document.getElementById(id);
+    if (el) apriAntenati(el);
+    if (location.hash === '#' + id) vai(id); else location.hash = id;
+  }
+
+  // La card delle note: un collegamento in «Le voci» apre la nota citata sopra la pagina; uno
+  // dentro la card la sostituisce, e «Indietro» torna alla nota da cui si arrivava.
+  const dlg = document.getElementById('nota');
+  const pila = [];
+  let corrente = null;
+  function voce(id) {
+    const v = document.getElementById(id);
+    return v && v.classList.contains('voce') ? v : null;
+  }
+  function mostra(id) {
+    const v = voce(id);
+    if (!v) return;
+    corrente = id;
+    const reg = v.closest('details.reg');
+    dlg.querySelector('.n-id').textContent = id;
+    dlg.querySelector('.n-reg').textContent = reg ? reg.querySelector(':scope > summary').firstChild.textContent.trim() : '';
+    dlg.querySelector('.n-tail').innerHTML = v.querySelector(':scope > summary .tail').innerHTML;
+    dlg.querySelector('.n-desc').innerHTML = v.querySelector(':scope > .desc').innerHTML;
+    const indietro = dlg.querySelector('#nota-indietro');
+    indietro.hidden = pila.length === 0;
+    if (pila.length) indietro.textContent = '← ' + pila[pila.length - 1];
+    dlg.querySelector('.n-body').scrollTop = 0;
+    if (!dlg.open) dlg.showModal();
+  }
+  dlg.addEventListener('close', function () { pila.length = 0; corrente = null; });
+  dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+  document.getElementById('nota-chiudi').addEventListener('click', function () { dlg.close(); });
+  document.getElementById('nota-indietro').addEventListener('click', function () {
+    if (pila.length) mostra(pila.pop());
+  });
+  document.getElementById('nota-pagina').addEventListener('click', function () {
+    const id = corrente;
+    dlg.close();
+    if (id) salta(id);
+  });
+
   document.addEventListener('click', function (e) {
     const a = e.target.closest('a.ref');
     if (!a) return;
     e.preventDefault(); e.stopPropagation();
     const id = a.getAttribute('href').slice(1);
-    const el = document.getElementById(id);
-    if (el) apriAntenati(el);
-    if (location.hash === '#' + id) vai(id); else location.hash = id;
+    const nellaCard = dlg.contains(a);
+    if ((nellaCard || a.closest('section.lists')) && voce(id)) {
+      if (!nellaCard) pila.length = 0;
+      else if (corrente && corrente !== id) pila.push(corrente);
+      mostra(id);
+      return;
+    }
+    if (nellaCard) dlg.close();
+    salta(id);
   });
   window.addEventListener('hashchange', function () { vai(decodeURIComponent(location.hash.slice(1))); });
   if (location.hash) vai(decodeURIComponent(location.hash.slice(1)));
@@ -407,6 +456,21 @@ details.voce > summary:hover .t { color: var(--accent); }
 .desc .piede { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
 .desc .piede code { background: none; padding: 0; }
 .empty { color: var(--muted); margin: 0 0 8px; }
+dialog#nota { padding: 0; border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+  color: var(--text); width: min(760px, calc(100vw - 32px)); max-height: min(86vh, 900px);
+  box-shadow: 0 12px 40px rgba(10, 14, 20, 0.28); }
+dialog#nota[open] { display: flex; flex-direction: column; }
+dialog#nota::backdrop { background: rgba(10, 14, 20, 0.45); }
+.n-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 16px;
+  border-bottom: 1px solid var(--track); }
+.n-meta { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.n-id { font-family: var(--mono); font-weight: 600; }
+.n-reg { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.n-tail { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+.n-x { padding: 2px 9px; font-size: 15px; line-height: 1.4; }
+.n-body { overflow: auto; padding: 14px 18px; flex: 1 1 auto; min-height: 0; }
+.n-desc { margin: 0; padding: 0; border-left: 0; max-width: none; }
+.n-foot { display: flex; justify-content: flex-end; padding: 10px 16px; border-top: 1px solid var(--track); }
 @media (max-width: 560px) {
   details.voce > summary { grid-template-columns: 0.9em minmax(0, 1fr) auto; }
   .voce .t { grid-column: 2 / -1; grid-row: 2; }
@@ -418,6 +482,8 @@ details.voce > summary:hover .t { color: var(--accent); }
 # --- pagina --------------------------------------------------------------------------------
 
 def pagina() -> str:
+    # con --serve la pagina si rifà a ogni richiesta: le righe lette prima possono essere vecchie
+    _righe_file.clear()
     cfg = rf.load_config(ROOT)
     voci, _ = rf.carica_voci(ROOT, cfg)
     per = {t: [v for v in voci if v.tipo == t] for t in cfg["registri"]}
@@ -677,6 +743,16 @@ def pagina() -> str:
     {liste}
   </section>
 </main>
+<dialog id="nota" aria-labelledby="nota-id">
+  <header class="n-head">
+    <button type="button" id="nota-indietro" hidden>←</button>
+    <div class="n-meta"><span class="n-id" id="nota-id"></span><span class="n-reg"></span></div>
+    <span class="n-tail"></span>
+    <button type="button" class="n-x" id="nota-chiudi" aria-label="Chiudi">✕</button>
+  </header>
+  <div class="n-body"><div class="desc n-desc"></div></div>
+  <footer class="n-foot"><button type="button" id="nota-pagina">Mostra nella pagina</button></footer>
+</dialog>
 <script>{JS}</script>
 </html>
 """
