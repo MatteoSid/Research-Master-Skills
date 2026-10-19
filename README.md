@@ -22,7 +22,11 @@ Sei documenti al primo livello di una cartella (di solito `research/`), e sottoc
 | `verificato.md` | `VER` | quello che sappiamo: fatti da una fonte, misure nostre, con la fonte |
 | `esperimenti.md` | `ESP` | ogni esperimento con il suo esito: positivo, negativo, inconcludente, abbandonato |
 | `da_fare.md` | `TODO` | il lavoro che manca, per fase e priorità, e le domande aperte alle fonti |
-| `stato_progetto.md` | — | la versione ufficiale: scelte in vigore, cosa funziona, cosa è da testare, cosa manca, cosa non abbiamo capito, strade scartate, dove potremmo sbagliare |
+| `stato_progetto.md` | — | la versione ufficiale, breve (un tetto di parole): l'obiettivo, le scelte in vigore, cosa abbiamo imparato, dove potremmo sbagliare, i prossimi passi |
+
+Nei registri entra quello che può cambiare una decisione; le cose piccole trovate lavorando si
+sistemano subito o vanno in una issue. Il codice si cita con file e simbolo, mai con il numero di
+riga, tranne nei report, che dicono in testa il commit su cui hanno misurato.
 
 Il regolamento completo, con il ciclo di vita delle voci e la tabella di propagazione, è in
 [`METODO.md`](METODO.md): lo leggono tutte le skill prima di scrivere.
@@ -35,7 +39,7 @@ Il regolamento completo, con il ciclo di vita delle voci e la tabella di propaga
 | `/research-flow:annota` | aggiunge una voce o ne cambia lo stato, dopo aver cercato nei registri e con graphify se c'è già. Chiude gli esperimenti con il loro esito, sposta le ipotesi confermate o smentite in verificato, e propaga il cambiamento |
 | `/research-flow:fonte` | registra un'informazione esterna (una persona, un documento, una documentazione, un articolo, una pagina, un messaggio, un dataset), tenendo separato quello che dice la fonte da quello che ne deduciamo, e la propaga a fatti, ipotesi, domande aperte e documento ufficiale. Se aggiungere una fonte lo decide l'utente, o Claude di sua iniziativa dicendolo; le fonti stanno nell'indice `fonti/README.md` con la loro affidabilità |
 | `/research-flow:stato` | riscrive la versione ufficiale dai registri, con la fotografia della versione vecchia in `storico/`, e allinea i documenti specchio. Con `leggi` risponde «a che punto siamo?» senza scrivere |
-| `/research-flow:controlla` | controllo di coerenza: ID doppi o inesistenti, ipotesi chiuse male, esperimenti senza esito, percorsi rotti, ufficiale o grafo vecchi. Corregge quello che è meccanico |
+| `/research-flow:controlla` | controllo di coerenza, prima di una PR verso il branch principale: ID doppi o inesistenti, ipotesi chiuse male, esperimenti senza esito, percorsi rotti, ufficiale vecchio o troppo lungo, numeri di riga citati, grafo vecchio. Corregge quello che è meccanico |
 | `/research-flow:overview` | la pagina dei registri nel browser: voci aperte e chiuse, esiti degli esperimenti, lavoro per fase, ipotesi per impatto, domande alle fonti, e ogni voce con la descrizione completa, dove ogni ID è un link alla sua voce. Scrive un file, o con `serve` tiene acceso un server locale (anche in rete con `--rete`) che la rifà a ogni ricarica |
 
 ## Gli script
@@ -48,6 +52,7 @@ un hook di pre-commit o in CI:
 python3 scripts/registri.py next ipotesi      # IP-027
 python3 scripts/registri.py find IP-003       # dove è definita e chi la cita, codice compreso
 python3 scripts/registri.py riepilogo         # voci per registro e stato, esiti degli esperimenti (JSON)
+python3 scripts/registri.py scartate          # le strade scartate, con cosa ne abbiamo tratto
 python3 scripts/registri.py check             # controlli di coerenza, exit 1 se ci sono errori
 python3 scripts/registri.py stale             # documenti che graphify non ha ancora visto
 ```
@@ -71,6 +76,7 @@ il modello è `templates/research-flow.json`). Tutte le chiavi sono facoltative:
 | `dir` | `research` | la cartella dei documenti |
 | `registri` | i cinque qui sopra | file e prefisso di ogni registro: un repo che ha già i suoi nomi li tiene |
 | `ufficiale` | `stato_progetto.md` | la versione ufficiale |
+| `ufficiale_parole_max` | `1500` | il tetto di parole dell'ufficiale, senza il registro delle modifiche (`0` = nessun tetto) |
 | `specchi` | `[]` | documenti fuori da `dir` che ripetono l'ufficiale e vanno allineati (`path`, `quando`) |
 | `vivi` | `fonti/**`, `misure/**` | sottocartelle in cui i percorsi citati devono esistere |
 | `percorsi_ignora` | `[]` | glob di percorsi citati che non devono esistere: file proposti, file di altri repo |
@@ -83,10 +89,13 @@ La configurazione sta nel repo e non in `userConfig` perché cambia da progetto 
 ## Graphify
 
 Se il repo ha un grafo [graphify](https://github.com/safishamsi/graphify) (`graphify-out/`), le
-skill lo usano per cercare se una voce esiste già prima di scriverla e per trovare file e simboli
-da citare, e alla fine lo aggiornano: `graphify update .` per il codice, `/graphify . --update`
-per i documenti. `registri.py check` avvisa quando un documento è cambiato dopo l'ultimo
-aggiornamento del grafo. Senza grafo le skill funzionano lo stesso, con `grep`.
+skill lo usano per trovare file e simboli da citare. I sei documenti conviene escluderli dal grafo
+(`.graphifyignore`): cambiano a ogni lavoro, ogni estrazione semantica costa, e fra le voci si
+naviga meglio con `registri.py find` e `scartate`. Il grafo resta per il codice e per i documenti
+che cambiano di rado (report, fonti), con `graphify update .` per il codice e `/graphify .
+--update` per i documenti, una volta alla fine del lavoro. `registri.py check` avvisa quando un
+documento che il grafo legge è cambiato dopo l'ultimo aggiornamento. Senza grafo le skill
+funzionano lo stesso, con `grep`.
 
 ## Con issue-flow
 

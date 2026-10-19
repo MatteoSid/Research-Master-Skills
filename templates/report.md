@@ -4,6 +4,9 @@
 
 Esperimento: ESP-NNN. Voci toccate: IP-NNN, …
 
+**Commit:** `<hash>` (il codice e gli script su cui si è misurato: le righe citate valgono per questo
+commit, e non si riallineano)
+
 ## 1. Domanda e criterio
 
 La domanda, e il criterio di successo deciso **prima** di guardare i risultati.

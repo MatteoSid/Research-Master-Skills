@@ -93,8 +93,7 @@ Per ogni informazione, nell'ordine:
    sezione delle fonti esterne: fatto, fonte con codice e data, cosa cambia. Se l'affidabilità
    della fonte è bassa, non è un fatto verificato: è un'ipotesi («Da dove: <fonte>, E3»).
 2. **Tocca un'ipotesi?** Cerca con `grep` nel registro ipotesi, con le parole dei registri e i
-   loro sinonimi, e con `graphify query` come aggiunta: il grafo cerca per parole, non per
-   significato. Sull'ipotesi trovata, `registri.py find` dice chi la cita.
+   loro sinonimi. Sull'ipotesi trovata, `registri.py find` dice chi la cita.
    - la conferma o la smentisce esplicitamente → la voce VER dice «Confermata/Smentita (era
      IP-NNN)», l'ipotesi va a `→ VER-NNN`, riga in «Smentite o confermate»;
    - la rende più o meno probabile senza chiuderla → una riga nell'ipotesi («<fonte>, R12, del
@@ -107,9 +106,10 @@ Per ogni informazione, nell'ordine:
    parziale, riscrivi la domanda con quello che manca.
 5. **Fa nascere domande nuove?** Aggiungile in fondo alla sezione delle domande, con gli ID che
    chiuderebbero e a chi o a cosa vanno fatte.
-6. **Cambia una scelta, o un'ipotesi con impatto alto?** Il documento ufficiale: la riga nel
-   registro delle modifiche con la fonte, e le sezioni toccate. Se cambia più di una sezione,
-   passa a `/research-flow:stato`.
+6. **Cambia una scelta, o un'ipotesi con impatto alto?** Il documento ufficiale, che è breve:
+   la riga nel registro delle modifiche con la fonte, e la sezione toccata («Le scelte in
+   vigore», o «Dove potremmo sbagliare» se è fra i rischi più gravi). Se cambia più di una
+   sezione, passa a `/research-flow:stato`.
 7. **Invalida un esperimento o un report?** Una nota nell'esperimento («da rileggere alla luce di
    <fonte>, R12»), e se serve un TODO per rifarlo.
 
@@ -122,8 +122,9 @@ aggiornati.
 python3 registri.py check
 ```
 
-Nessun errore prima di chiudere; poi il grafo, se c'è: la skill graphify con `--update` (sono
-cambiati documenti e forse immagini).
+Nessun errore prima di chiudere; poi il grafo, se c'è: il file della fonte (e le immagini) li
+legge, i registri di solito no (`.graphifyignore`). L'estrazione semantica si fa una volta sola,
+alla fine del lavoro.
 
 ## 6. Resoconto
 

@@ -46,7 +46,7 @@ Mostra all'utente quello che hai trovato e **chiedi** (con AskUserQuestion) solo
 - **repo con registri:** la mappatura da registri esistenti a tipi del metodo. Proponi di
   **tenere i nomi dei file e i prefissi esistenti** (la configurazione li mappa): rinominare
   rompe le citazioni per niente. Per il documento ufficiale proponi invece di migrare verso le
-  dieci sezioni del metodo, perché è la parte che cambia davvero.
+  sei sezioni del metodo, brevi, perché è la parte che cambia davvero.
 
 Non chiedere quello che si deduce dal repo.
 
@@ -59,6 +59,7 @@ Non chiedere quello che si deduce dal repo.
   "dir": "research",
   "registri": { "dubbi": {"file": "...", "prefisso": "DUB"}, "...": {} },
   "ufficiale": "stato_progetto.md",
+  "ufficiale_parole_max": 1500,
   "specchi": [{"path": "frontend/src/docs/", "quando": "cambia una scelta o una soglia"}],
   "vivi": ["fonti/**/*.md", "misure/**/*.md"],
   "percorsi_ignora": [],
@@ -67,8 +68,10 @@ Non chiedere quello che si deduce dal repo.
 }
 ```
 
+- `ufficiale_parole_max`: il tetto di parole dell'ufficiale, senza il registro delle
+  modifiche (METODO.md, «Il documento ufficiale»); 0 lo toglie.
 - `specchi`: i documenti fuori da `dir` che ripetono il contenuto dell'ufficiale e vanno
-  aggiornati con lui.
+  aggiornati con lui. Ripetono le scelte a parole; i numeri li leggono dal codice o da un'API.
 - `vivi`: le sottocartelle di `dir` i cui percorsi citati devono esistere; brainstorm e storico
   non ci vanno, perché citano file proposti o spariti.
 - `prefissi_esterni`: prefissi che si citano come ID ma sono definiti altrove (`JIRA`, `ADR` di
@@ -122,10 +125,11 @@ dal vecchio nome trova il nuovo; e le citazioni `ESP-NNN` nelle voci che l'esper
 
 1. copialo in `storico/<nome>_<data>.md` così com'è, con in testa solo l'avviso di fotografia e
    la mappa delle sezioni vecchie e nuove (METODO.md, «Le fotografie»);
-2. scrivi `stato_progetto.md` con le dieci sezioni del metodo, **portando tutto il contenuto**:
-   le sezioni di dominio del vecchio documento diventano sottosezioni di «Le scelte in vigore»,
-   «Dove potremmo sbagliare» e il registro delle modifiche passano interi. Le sezioni nuove
-   («Cosa funziona», «Strade scartate», «Cosa non abbiamo capito») le riempi dai registri.
+2. scrivi `stato_progetto.md` con le sei sezioni del metodo, entro il tetto di parole: le
+   sezioni di dominio del vecchio documento diventano sottosezioni di «Le scelte in vigore», in
+   breve; il dettaglio che non ci sta va nei registri (una voce per ogni affermazione che non ne
+   ha una), e la fotografia del passo 1 tiene il testo vecchio intero. «Cosa abbiamo imparato»
+   e «Dove potremmo sbagliare» le riempi dai registri.
    Se il vecchio documento aveva un pubblico dichiarato (nel `CLAUDE.md`, per esempio «serve a
    chi decide per capire se stiamo seguendo la strada giusta»), la testa del nuovo lo ripete;
 3. nel registro delle modifiche i riferimenti a paragrafi (§3.4) puntavano al vecchio documento:
@@ -160,8 +164,11 @@ dubbio nel codice, che c'è da scrivere nei registri. Se il `CLAUDE.md` aveva un
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/registri.py check
 ```
 
-Correggi gli errori; gli avvisi li riporti all'utente. Poi, se c'è un grafo, aggiornalo: la skill
-graphify con `--update`, perché sono cambiati documenti.
+Correggi gli errori; gli avvisi li riporti all'utente. Poi, se c'è un grafo, proponi di
+escludere dal grafo i sei documenti e `storico/` (righe nel `.graphifyignore`, METODO.md,
+«Graphify»): se l'utente è d'accordo, i nodi che quei file hanno già nel grafo vanno tolti a mano,
+perché `graphify update .` non li toglie. Per gli altri documenti nuovi, la skill graphify con
+`--update`, una volta.
 
 ## 8. Resoconto
 
