@@ -1,6 +1,6 @@
 ---
 name: controlla
-description: "Controlla la coerenza della documentazione esplorativa e corregge quello che è meccanico: ID doppi o citati senza definizione, ipotesi chiuse verso un VER che non esiste, esperimenti conclusi senza esito o senza report, voci nella sezione sbagliata, percorsi citati che non esistono, documento ufficiale più vecchio dei registri, grafo graphify non aggiornato. Da lanciare prima di un commit che tocca la ricerca e alla chiusura di una issue. Trigger: /research-flow:controlla, «controlla i registri», «la documentazione è coerente?», «prima di committare controlla la ricerca»."
+description: "Controlla la coerenza della documentazione esplorativa e corregge quello che è meccanico: ID doppi o citati senza definizione, ipotesi chiuse verso un VER che non esiste, esperimenti conclusi senza esito o senza report, voci nella sezione sbagliata, percorsi citati che non esistono, documento ufficiale più vecchio dei registri o oltre il tetto di parole, numeri di riga citati dove il testo si tiene aggiornato, grafo graphify non aggiornato. Da lanciare prima di una PR verso il branch principale che tocca la ricerca, non a ogni commit né alla chiusura di ogni issue figlia. Trigger: /research-flow:controlla, «controlla i registri», «la documentazione è coerente?», «prima della PR controlla la ricerca»."
 argument-hint: "[--solo-report]"
 ---
 
@@ -31,8 +31,10 @@ Exit 1 se c'è almeno un errore. I codici:
 | `id-mancante` | avviso | numeri saltati in un registro | di solito una voce cancellata: cerca in `git log -S '<ID>'` e ripristinala con il suo stato |
 | `sezione` | avviso | una voce chiusa sta fra le aperte | spostala nella sezione dei chiusi |
 | `percorso` | avviso | un file citato non esiste | file spostato: aggiorna la citazione. File proposto da una voce aperta o di un altro repo: aggiungilo a `percorsi_ignora` nella configurazione |
-| `esito-non-citato` | avviso | un esperimento negativo, abbandonato o inconcludente, o un'ipotesi smentita, non compare nell'ufficiale | una riga in «Strade scartate», «Dove potremmo sbagliare» o «Cosa non abbiamo capito» secondo METODO.md, «Cosa vuol dire l'esito» |
 | `ufficiale-vecchio`, `ufficiale-data` | avviso | i registri sono cambiati dopo l'ultimo aggiornamento dell'ufficiale | `/research-flow:stato` |
+| `ufficiale-lungo` | avviso | l'ufficiale supera il tetto di parole (`ufficiale_parole_max`) | `/research-flow:stato`: si sceglie, non si comprime; il dettaglio resta nei registri |
+| `riga-citata` | avviso | una voce aperta, l'ufficiale, il `README.md` o il `CLAUDE.md` citano il codice con il numero di riga | `file` + simbolo, trovato leggendo il file alla riga citata nel commit in cui la citazione è stata scritta (`git blame` sulla riga del registro) |
+| `righe-senza-commit` | avviso | un report o una fonte cita righe senza dire su quale commit valgono | `**Commit:** `<hash>`` in testa: il commit su cui si è misurato o, se non si sa, l'ultimo che ha toccato il documento. Le righe non si riallineano |
 | `graphify` | avviso | documenti cambiati dopo l'ultimo aggiornamento del grafo | la skill graphify con `--update` |
 
 ## 2. Correggi
@@ -54,20 +56,25 @@ Poi rilancia `check` finché gli errori sono zero.
 Leggili a occhio sulle voci cambiate di recente (`git diff` e `git log -p --since=<ultima
 modifica dell'ufficiale> -- <dir>/`):
 
-- ogni esperimento negativo o abbandonato e ogni ipotesi smentita citati nell'ufficiale (lo
-  controlla lo script) stanno **nella sezione giusta**: un'alternativa bocciata in «Strade
-  scartate», una scelta in vigore messa in dubbio in «Dove potremmo sbagliare»;
+- gli esperimenti negativi o abbandonati e le ipotesi smentite citati nell'ufficiale stanno
+  **nella sezione giusta**: un'alternativa bocciata in «Cosa abbiamo imparato», una scelta in
+  vigore messa in dubbio in «Dove potremmo sbagliare»;
 - la domanda di ogni esperimento concluso di recente è scritta dalla parte dell'idea, così che
   `positivo` voglia dire «regge»;
-- le ipotesi con impatto alto sono in «Dove potremmo sbagliare»;
-- le voci citano il codice con file e riga che esistono ancora (per le voci aperte: una riga
-  spostata va aggiornata);
+- i rischi più gravi (ipotesi con impatto alto, scelte messe in dubbio) sono in «Dove potremmo
+  sbagliare»;
+- le voci aperte citano il codice con file e simbolo che esistono ancora: un simbolo rinominato o
+  tolto si aggiorna. Le voci chiuse e i report non si riallineano;
+- le voci nuove passano il test di METODO.md, «Cosa entra nei registri»: una cosa piccola che non
+  cambia una decisione si sistema o va in una issue, e la voce si toglie solo se è nata in questo
+  lavoro e nessuno la cita (se ha già un ID, resta con lo stato `accettato` o `fatto`);
 - se la configurazione ha `specchi`, e l'ufficiale è cambiato, gli specchi sono allineati.
 
 ## 4. Il grafo
 
-Se lo script dà avvisi `graphify`, aggiorna il grafo con la skill graphify e `--update`, poi
-rilancia `registri.py stale`: deve essere vuoto.
+Se lo script dà avvisi `graphify`, aggiorna il grafo con la skill graphify e `--update`, una
+volta sola, poi rilancia `registri.py stale`: deve essere vuoto. I documenti esclusi da
+`.graphifyignore` (di solito i sei documenti e `storico/`) non danno avvisi e non si estraggono.
 
 ## 5. Resoconto
 

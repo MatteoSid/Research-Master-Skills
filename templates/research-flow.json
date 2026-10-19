@@ -8,6 +8,7 @@
     "da_fare": {"file": "da_fare.md", "prefisso": "TODO"}
   },
   "ufficiale": "stato_progetto.md",
+  "ufficiale_parole_max": 1500,
   "specchi": [],
   "vivi": ["fonti/**/*.md", "misure/**/*.md"],
   "percorsi_ignora": [],

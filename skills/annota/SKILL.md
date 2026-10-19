@@ -34,6 +34,11 @@ Usa la tabella «Dove va questa cosa?» di METODO.md. Una cosa sola può toccare
 esperimento concluso produce un `ESP` concluso, un `VER` e magari chiude un `IP`. Se il tipo
 non si capisce dalla richiesta, chiedilo in una riga invece di indovinare.
 
+**Prima chiediti se deve entrare** (METODO.md, «Cosa entra nei registri»): nei registri va quello
+che può cambiare una decisione. Una cosa piccola trovata lavorando (un commento superato, un
+numero vecchio in un documento, una differenza di forma) non diventa una voce: si sistema subito o
+va in una issue del tracker. Se l'utente chiede esplicitamente di annotarla, la annoti.
+
 ## 2. Cerca se c'è già
 
 Prima di scrivere una voce nuova, in quest'ordine:
@@ -41,21 +46,21 @@ Prima di scrivere una voce nuova, in quest'ordine:
 ```bash
 python3 registri.py find <ID>                # per ogni ID che la richiesta nomina: definizione e chi la cita
 grep -n -i '<parola chiave>' <dir>/*.md      # con le parole dei registri, e più di una
-graphify query "<la cosa, in parole>"        # se esiste graphify-out/graph.json, come aggiunta
-graphify explain "<ID o simbolo trovato>"    # dalla voce ai report, agli script e al codice
+python3 registri.py scartate                 # se è un'idea da provare: è già stata scartata?
 ```
 
-`registri.py find` dà tutte le citazioni con file e riga; il grafo ne ha la gran parte, ma senza
-la riga. `graphify query` cerca per parole, non per significato: trova una voce solo se la
-descrivi con le parole con cui è scritta. Su un campione di 14 voci descritte con altre parole
-ne ha trovate 7 («ombra della candela» non trova la voce sui wick). Per questo il `grep` si fa
-con i termini dei registri, provando i sinonimi. Il grafo serve soprattutto dopo: con
-`graphify explain` sulla voce trovata arrivi ai report, agli script e al codice collegati.
+`registri.py find` dà la definizione e tutte le citazioni, nei registri, nei report e nel
+codice, con file e riga: è quello che serve per passare da una voce ai report e al codice. Il
+`grep` si fa con i termini dei registri, provando i sinonimi: chi cerca per parole trova una voce
+solo se la descrive con le parole con cui è scritta (su 14 voci descritte con altre parole,
+`graphify query` ne trovava 7). Il grafo graphify, se c'è, serve per il codice (`graphify explain
+"<simbolo>"`); i registri di solito ne sono esclusi (METODO.md, «Graphify»).
 
 - se la voce **esiste già**, la aggiorni: non ne crei una seconda;
 - se esiste una voce **vicina**, la nuova la cita, e se serve la vicina cita la nuova;
-- se tocca il codice, trova file e simbolo con `graphify explain` e **verifica la riga leggendo
-  il file**: una voce con un riferimento sbagliato è peggio di una senza.
+- se tocca il codice, trova file e simbolo (`graphify explain`, `grep`) e **verificali leggendo
+  il file**: una voce con un riferimento sbagliato è peggio di una senza. Si cita il simbolo, mai
+  il numero di riga, che si sposta alla prima modifica (METODO.md, «Lo stile»).
 
 ## 3. Scrivi la voce
 
@@ -70,10 +75,11 @@ recenti per prime. Rispetta lo stile di METODO.md: numeri misurati, date `GG-MM-
 
 Per tipo, quello che non deve mancare:
 
-- **dubbio:** `Dove` con file e riga verificati; come si risolve è una proposta, non una decisione.
+- **dubbio:** `Dove` con file e simbolo verificati; come si risolve è una proposta, non una
+  decisione. Un dubbio entra se può cambiare un risultato o una scelta.
 - **ipotesi:** `Dove la usiamo` (se è un parametro nostro, il nome nel codice o nella
-  configurazione) e `Come si verifica` concreto. Se l'impatto è alto, va anche nell'ufficiale,
-  «Dove potremmo sbagliare» (vedi passo 5).
+  configurazione) e `Come si verifica` concreto. Se l'impatto è alto e il rischio è fra i più
+  gravi, va anche nell'ufficiale, «Dove potremmo sbagliare» (vedi passo 5).
 - **fatto verificato:** la fonte ricontrollabile. Una misura dice script, dati e data. Un fatto
   da una fonte esterna passa di norma da `/research-flow:fonte`, che scrive anche le parole
   originali.
@@ -113,15 +119,16 @@ Segui la tabella «La propagazione» di METODO.md. In pratica, dopo ogni voce ch
 
 - tocca un'altra voce? Aggiornala e cita l'ID nuovo (un'ipotesi `in verifica (ESP-NNN)`
   quando parte l'esperimento; il TODO che l'esperimento chiude; il dubbio che una misura risolve);
-- cambia lo stato del progetto? Allora va nel documento ufficiale:
-  - esperimento **positivo** → «Cosa funziona», e «Le scelte in vigore» se cambia una scelta;
-  - **negativo** su un'alternativa, **abbandonato**, ipotesi **smentita** → una riga in «Strade
-    scartate», con «si riprova se…»;
-  - **negativo** su una scelta in vigore → «Dove potremmo sbagliare» (o «Cosa non abbiamo
-    capito»), e un TODO per rimediare;
-  - **inconcludente** → «Cosa non abbiamo capito»;
-  - ipotesi con impatto alto → «Dove potremmo sbagliare»;
-  - ogni cambiamento di una scelta → una riga nel registro delle modifiche e la data in testa.
+- cambia lo stato del progetto? Allora va nel documento ufficiale, che è breve (un tetto di
+  parole): entra solo quello che conta per chi lo legge.
+  - ogni cambiamento di una scelta → «Le scelte in vigore», una riga nel registro delle
+    modifiche e la data in testa;
+  - esperimento **positivo**, o **negativo** su un'alternativa importante → una riga in «Cosa
+    abbiamo imparato»; gli altri esiti negativi, abbandonati e le ipotesi smentite restano nel
+    registro, e li elenca `registri.py scartate`: non serve ricopiarli;
+  - **negativo** su una scelta in vigore, **inconcludente** su una cosa che regge una scelta,
+    ipotesi con impatto alto → «Dove potremmo sbagliare» se è fra i cinque rischi più gravi, e
+    un TODO per rimediare.
 
   Per una riga basta modificare la sezione; se cambiano più sezioni o una scelta importante,
   passa a `/research-flow:stato`, che riscrive l'ufficiale e salva la fotografia.
@@ -133,10 +140,11 @@ Segui la tabella «La propagazione» di METODO.md. In pratica, dopo ogni voce ch
 python3 registri.py check
 ```
 
-Nessun errore prima di chiudere. Poi aggiorna il grafo, se c'è: la skill graphify con
-`--update`, perché sono cambiati documenti.
+Nessun errore prima di chiudere. Il grafo non si aggiorna per i soli registri (di solito sono
+esclusi da `.graphifyignore`); se hai scritto anche un report o una fonte, l'estrazione semantica
+si fa una volta sola, alla fine del lavoro.
 
 ## 7. Resoconto
 
 Una riga per voce toccata: `ESP-014 creato (proposto)`, `IP-006 → VER-031 (smentita)`,
-`stato_progetto.md § Strade scartate +1`. Non committare.
+`stato_progetto.md § Cosa abbiamo imparato +1`. Non committare.

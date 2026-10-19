@@ -8,6 +8,8 @@ decidono cosa scrivere.
     registri.py next IP           l'ID successivo di un registro (per prefisso o per tipo)
     registri.py find IP-003       dove è definita una voce e chi la cita
     registri.py riepilogo         le voci per registro e per stato, in JSON
+    registri.py scartate [--json] le strade scartate: esperimenti negativi, abbandonati o
+                                  inconcludenti e ipotesi smentite, con cosa ne abbiamo tratto
     registri.py check [--json]    i controlli di coerenza; exit 1 se c'è almeno un errore
     registri.py stale             i documenti cambiati dopo l'ultimo aggiornamento di graphify
 
@@ -40,6 +42,8 @@ DEFAULT_CONFIG = {
         "da_fare": {"file": "da_fare.md", "prefisso": "TODO"},
     },
     "ufficiale": "stato_progetto.md",
+    # il tetto di parole dell'ufficiale, senza il registro delle modifiche (0 = nessun tetto)
+    "ufficiale_parole_max": 1500,
     # i campi obbligatori delle voci scritte come intestazione (### ID · titolo)
     "campi": {
         "dubbi": ["Dove", "Stato"],
@@ -66,6 +70,12 @@ FILE_LIKE = re.compile(
     r"`([^`\s]+?\.(?:md|py|csv|txt|json|ts|tsx|js|jpg|jpeg|png|sql|yml|yaml|ipynb|html))(?:[:§#][^`]*)?`"
 )
 DATE_RE = re.compile(r"(\d{1,2})-(\d{1,2})-(\d{4})")
+# una citazione con il numero di riga: `file.py:123`, `file.ts:40-52`
+RIGA_RE = re.compile(
+    r"`?([\w./-]+\.(?:py|ts|tsx|js|jsx|mjs|sql|ya?ml|sh|css|json|toml|md))`?:(\d+)(?:[-–]\d+)?(?![\d:])"
+)
+# il commit dichiarato in testa a un documento datato: **Commit:** `abc1234`
+COMMIT_RE = re.compile(r"\*\*Commit:?\*\*:?\s*`?[0-9a-f]{7,40}`?", re.I)
 
 
 # ---------------------------------------------------------------------------- configurazione
@@ -118,7 +128,11 @@ def id_pattern(prefissi: list[str]) -> re.Pattern:
 
 
 def split_row(line: str) -> list[str]:
-    return [c.strip() for c in line.strip().strip("|").split("|")]
+    # `\|` è una barra dentro la cella, come in GitHub: non separa le colonne
+    corpo = line.strip().removeprefix("|")
+    if corpo.endswith("|") and not corpo.endswith("\\|"):
+        corpo = corpo[:-1]
+    return [c.strip().replace("\\|", "|") for c in re.split(r"(?<!\\)\|", corpo)]
 
 
 def parse_registro(path: Path, tipo: str, prefisso: str, rel: str) -> list[Voce]:
@@ -304,6 +318,70 @@ def cmd_riepilogo(root: Path, cfg: dict) -> int:
     return 0
 
 
+def campo(v: Voce, nome: str) -> str:
+    """Il testo di un campo `- **Nome:** …` di una voce a intestazione, fino al campo dopo."""
+    m = re.search(rf"\*\*{re.escape(nome)}:?\*\*:?\s*(.*?)(?=\n\s*[-*]\s+\*\*|\Z)", v.testo, re.S | re.I)
+    return " ".join(m.group(1).split()) if m else ""
+
+
+def prima_frase(testo: str, massimo: int = 220) -> str:
+    frase = re.split(r"(?<=[.;])\s", testo, maxsplit=1)[0]
+    return frase if len(frase) <= massimo else frase[: massimo - 1].rstrip() + "…"
+
+
+def strade_scartate(cfg: dict, voci: list[Voce]) -> list[dict]:
+    """Esperimenti negativi, abbandonati o inconcludenti e ipotesi smentite: l'elenco completo
+    che l'ufficiale non ripete per intero."""
+    out = []
+    for v in voci:
+        e = esito(v) if v.tipo == "esperimenti" else None
+        if e in ("negativo", "abbandonato", "inconcludente"):
+            tratto = campo(v, "Cosa ne abbiamo tratto") or campo(v, "Esito")
+            # «VER-015. I livelli profondi…»: gli ID in testa li dà già la voce
+            tratto = re.sub(r"^(?:\(?[A-Z]+-\d+(?:\s*\([^)]*\))?\)?(?:\s*e\s+|[,;.:]?\s*))+", "", tratto)
+            tratto = tratto.lstrip("-* ").replace("**", "")
+            out.append({"id": v.id, "esito": e, "titolo": v.titolo, "tratto": prima_frase(tratto), "dove": f"{v.file}:{v.riga}"})
+    pref_ip = cfg["registri"].get("ipotesi", {}).get("prefisso")
+    if pref_ip:
+        for v in voci:
+            if v.tipo != "verificato" or not re.search(r"smentit", v.testo, re.I):
+                continue
+            ips = re.findall(rf"era\s+({re.escape(pref_ip)}-\d+)", v.testo)
+            if ips:
+                out.append({"id": v.id, "esito": "smentita", "titolo": f"smentisce {', '.join(ips)}", "tratto": prima_frase(v.titolo), "dove": f"{v.file}:{v.riga}"})
+    return out
+
+
+def cmd_scartate(root: Path, cfg: dict, as_json: bool) -> int:
+    voci, _ = carica_voci(root, cfg)
+    righe = strade_scartate(cfg, voci)
+    if as_json:
+        print(json.dumps(righe, ensure_ascii=False, indent=2))
+        return 0
+    for r in righe:
+        print(f"{r['id']:<8} {r['esito']:<13} {r['titolo'][:90]}")
+        if r["tratto"]:
+            print(f"         {r['tratto']}")
+    print(f"\n{len(righe)} strade scartate")
+    return 0
+
+
+def aperta(v: Voce) -> bool:
+    """Una voce ancora viva: le chiuse e i fatti verificati valgono per la data in cui sono
+    stati scritti, e non si riallineano."""
+    if v.tipo == "verificato":
+        return False
+    s = norm_stato(v.stato) if v.stato else ""
+    if s.startswith(("risolto", "fatto", "concluso")) or s == "→ VER":
+        return False
+    sez = v.sezione.lower()
+    return not any(k in sez for k in ("risolt", "fatt", "conclus", "smentite o confermate"))
+
+
+def parole(testo: str) -> int:
+    return sum(1 for t in testo.split() if re.search(r"\w", t))
+
+
 def norm_stato(stato: str) -> str:
     s = stato.strip().strip("`*").lower()
     if "→" in s and "ver-" in s:
@@ -481,22 +559,44 @@ def controlla(root: Path, cfg: dict) -> list[Problema]:
             if dopo:
                 P.append(Problema("avviso", "ufficiale-vecchio", str(uff.relative_to(root)), f"aggiornato al {d:%d-%m-%Y}, ma dopo sono cambiati {', '.join(dopo)}: /research-flow:stato"))
 
-    # 10. le strade scartate e le cose non capite arrivano nell'ufficiale
-    if uff.exists():
-        testo_uff = uff.read_text(encoding="utf-8")
-        citati = set(id_pattern(prefissi).findall(testo_uff))
-        for v in voci:
-            if v.tipo == "esperimenti" and esito(v) in ("negativo", "abbandonato", "inconcludente") and v.id not in citati:
-                P.append(Problema("avviso", "esito-non-citato", f"{v.file}:{v.riga}", f"{v.id} ({esito(v)}) non compare in {cfg['ufficiale']}: va in «Strade scartate», «Dove potremmo sbagliare» o «Cosa non abbiamo capito»"))
-        if pref_ip and pref_ver:
-            for v in voci:
-                if v.tipo != "verificato" or not re.search(r"smentit", v.testo, re.I):
-                    continue
-                ips = re.findall(rf"era\s+({re.escape(pref_ip)}-\d+)", v.testo)
-                if ips and v.id not in citati and not any(i in citati for i in ips):
-                    P.append(Problema("avviso", "esito-non-citato", f"{v.file}:{v.riga}", f"{v.id} smentisce {', '.join(ips)} ma non compare in {cfg['ufficiale']} («Strade scartate»)"))
+    # 10. l'ufficiale si legge in una volta: un tetto di parole, senza il registro delle modifiche
+    tetto = cfg.get("ufficiale_parole_max") or 0
+    if uff.exists() and tetto:
+        corpo = re.split(r"^#{1,3}\s+(?:\d+\.\s*)?registro delle modifiche.*$", uff.read_text(encoding="utf-8"), maxsplit=1, flags=re.M | re.I)[0]
+        n = parole(corpo)
+        if n > tetto:
+            P.append(Problema("avviso", "ufficiale-lungo", str(uff.relative_to(root)), f"{n} parole senza il registro delle modifiche, oltre il tetto di {tetto}: il dettaglio va nei registri (/research-flow:stato)"))
 
-    # 11. grafo vecchio
+    # 11. niente numeri di riga dove il testo si tiene aggiornato: l'ufficiale, le voci aperte,
+    # README e CLAUDE.md. Le righe si spostano a ogni modifica del codice; si cita file e simbolo
+    vive_doc: list[tuple[str, int, str, str]] = []  # (file, riga, etichetta, testo)
+    if uff.exists():
+        for n, line in enumerate(uff.read_text(encoding="utf-8").splitlines(), 1):
+            if re.match(r"^#{1,3}\s+(?:\d+\.\s*)?registro delle modifiche", line, re.I):
+                break
+            vive_doc.append((str(uff.relative_to(root)), n, "", line))
+    for v in voci:
+        if aperta(v):
+            vive_doc.append((v.file, v.riga, f"{v.id} ", v.testo))
+    for nome in ("README.md", "CLAUDE.md"):
+        f = root / nome
+        if f.exists():
+            for n, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+                vive_doc.append((nome, n, "", line))
+    for f, n, etichetta, testo in vive_doc:
+        trovate = sorted({m.group(0).strip("`") for m in RIGA_RE.finditer(testo)})
+        if trovate:
+            P.append(Problema("avviso", "riga-citata", f"{f}:{n}", f"{etichetta}cita {', '.join(trovate[:4])}{'…' if len(trovate) > 4 else ''}: scrivi file e simbolo, non la riga"))
+
+    # 12. un documento datato (report, fonte) che cita righe dice su quale commit valgono
+    for doc in documenti_vivi(root, cfg):
+        if doc.parent == base or doc.parent == root:
+            continue
+        testo_doc = doc.read_text(encoding="utf-8")
+        if RIGA_RE.search(testo_doc) and not COMMIT_RE.search("\n".join(testo_doc.splitlines()[:25])):
+            P.append(Problema("avviso", "righe-senza-commit", str(doc.relative_to(root)), "cita numeri di riga senza «**Commit:** `<hash>`» in testa: le righe valgono per quel commit"))
+
+    # 13. grafo vecchio
     for rel in stale(root, cfg):
         P.append(Problema("avviso", "graphify", rel, "cambiato dopo l'ultimo aggiornamento del grafo"))
     return P
@@ -579,6 +679,7 @@ def main() -> int:
     s = sub.add_parser("next"); s.add_argument("registro")
     s = sub.add_parser("find"); s.add_argument("id")
     sub.add_parser("riepilogo")
+    s = sub.add_parser("scartate"); s.add_argument("--json", action="store_true")
     s = sub.add_parser("check"); s.add_argument("--json", action="store_true")
     sub.add_parser("stale")
     args = ap.parse_args()
@@ -592,6 +693,8 @@ def main() -> int:
         return cmd_find(root, cfg, args.id)
     if args.cmd == "riepilogo":
         return cmd_riepilogo(root, cfg)
+    if args.cmd == "scartate":
+        return cmd_scartate(root, cfg, args.json)
     if args.cmd == "stale":
         for rel in stale(root, cfg):
             print(rel)
