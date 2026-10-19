@@ -118,7 +118,11 @@ def id_pattern(prefissi: list[str]) -> re.Pattern:
 
 
 def split_row(line: str) -> list[str]:
-    return [c.strip() for c in line.strip().strip("|").split("|")]
+    # `\|` è una barra dentro la cella, come in GitHub: non separa le colonne
+    corpo = line.strip().removeprefix("|")
+    if corpo.endswith("|") and not corpo.endswith("\\|"):
+        corpo = corpo[:-1]
+    return [c.strip().replace("\\|", "|") for c in re.split(r"(?<!\\)\|", corpo)]
 
 
 def parse_registro(path: Path, tipo: str, prefisso: str, rel: str) -> list[Voce]:
