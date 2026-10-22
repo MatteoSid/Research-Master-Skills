@@ -531,7 +531,7 @@ def pagina() -> str:
 
     # uno stato che METODO.md non prevede conta fra gli aperti, per non sparire dalla pagina
     dub_aperti = [v for v in dub if stato_di(v) not in ("accettato", "risolto")]
-    ip_aperte = [v for v in ip if stato_di(v) != "→ VER"]
+    ip_aperte = [v for v in ip if stato_di(v) not in ("→ VER", "decaduta")]
     # dubbi
     dub_seg = [("aperti", len(dub_aperti) - conta(dub, "in lavorazione"), "c-open"),
                ("in lavorazione", conta(dub, "in lavorazione"), "c-run"),
@@ -540,6 +540,7 @@ def pagina() -> str:
     # ipotesi
     ip_seg = [("da verificare", len(ip_aperte) - conta(ip, "in verifica"), "c-open"),
               ("in verifica", conta(ip, "in verifica"), "c-run"),
+              ("decadute", conta(ip, "decaduta"), "c-idle"),
               ("chiuse in verificato", conta(ip, "→ VER"), "c-done")]
     # esperimenti
     esp_seg = [("proposti", len(esp) - conta(esp, "in corso", "concluso"), "c-open"),
@@ -588,7 +589,7 @@ def pagina() -> str:
 
     totali = (
         f'<div class="totals"><span><b>{aperti_dub + aperti_ip + aperti_esp + aperti_todo_n}</b>cose aperte</span>'
-        f'<span><b>{dub_seg[3][1] + dub_seg[2][1] + ip_seg[2][1] + esp_seg[2][1] + len(fatti)}</b>chiuse</span>'
+        f'<span><b>{dub_seg[3][1] + dub_seg[2][1] + ip_seg[2][1] + ip_seg[3][1] + esp_seg[2][1] + len(fatti)}</b>chiuse</span>'
         f'<span><b>{len(ver)}</b>fatti verificati</span>'
         + (f'<span><a class="ref plain" href="#domande-1"><b>{n_domande}</b>domande aperte alle fonti</a></span>'
            if sez_domande else "")
@@ -662,7 +663,7 @@ def pagina() -> str:
         s = stato_di(v)
         cls = {"aperto": aperto_cls, "da verificare": aperto_cls, "proposto": aperto_cls,
                "da fare": aperto_cls, "accettato": "k-idle", "risolto": "k-pos", "→ VER": "k-pos",
-               "concluso": "k-pos"}.get(s, "k-run")
+               "decaduta": "k-idle", "concluso": "k-pos"}.get(s, "k-run")
         if s == "→ VER":
             m = re.search(r"VER-\d+", v.stato or "")
             if m:
@@ -680,7 +681,8 @@ def pagina() -> str:
     )
     l_ip = (
         f'<div><h3>Da verificare</h3>{elenco([(v, v.titolo, imp_chip(v) + coda_stato(v)) for v in ip_aperte])}'
-        f'<h3>Chiuse</h3>{elenco([(v, v.titolo, coda_stato(v)) for v in ip if stato_di(v) == "→ VER"])}</div>'
+        f'<h3>Chiuse</h3>{elenco([(v, v.titolo, coda_stato(v)) for v in ip if stato_di(v) == "→ VER"])}'
+        f'<h3>Decadute</h3>{elenco([(v, v.titolo, coda_stato(v)) for v in ip if stato_di(v) == "decaduta"])}</div>'
     )
     l_esp = (
         f'<div><h3>Da fare</h3>{elenco([(v, v.titolo, coda_stato(v)) for v in esp if stato_di(v) != "concluso"])}'

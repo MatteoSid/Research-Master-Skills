@@ -1,6 +1,6 @@
 ---
 name: annota
-description: "Scrive nei registri della documentazione esplorativa: aggiunge una voce (dubbio sul codice, ipotesi, fatto verificato, esperimento, cosa da fare) o ne cambia lo stato — chiude un esperimento con il suo esito, anche e soprattutto se è fallito; sposta un'ipotesi confermata o smentita in verificato; segna un dubbio risolto o un TODO fatto — e propaga il cambiamento alle voci collegate. Cerca prima nei registri e con graphify se la cosa è già scritta. Trigger: /research-flow:annota, «annota che…», «segna questo dubbio», «registra l'esperimento», «l'esperimento X è fallito», «questa ipotesi è smentita», «chiudi TODO-N», «abbiamo provato e non funziona», «tieni traccia di…»."
+description: "Scrive nei registri della documentazione esplorativa: aggiunge una voce (dubbio sul codice, ipotesi, fatto verificato, esperimento, cosa da fare) o ne cambia lo stato — chiude un esperimento con il suo esito, anche e soprattutto se è fallito; sposta un'ipotesi confermata o smentita in verificato, o la segna decaduta quando non serve più; segna un dubbio risolto o un TODO fatto — e propaga il cambiamento alle voci collegate. Cerca prima nei registri e con graphify se la cosa è già scritta. Trigger: /research-flow:annota, «annota che…», «segna questo dubbio», «registra l'esperimento», «l'esperimento X è fallito», «questa ipotesi è smentita», «chiudi TODO-N», «abbiamo provato e non funziona», «tieni traccia di…»."
 argument-hint: "<cosa annotare, in parole> | esito ESP-N | risolto DUB-N | fatto TODO-N"
 ---
 
@@ -127,6 +127,14 @@ dice «**Confermata** (era IP-NNN)» o «**Smentita** (era IP-NNN)», con la fon
 dell'ipotesi diventa `→ VER-NNN`; la voce resta dov'è con il suo testo, e in «Smentite o
 confermate» aggiungi la riga. Mai cancellare l'ipotesi.
 
+**Ipotesi decaduta.** Quando non serve più verificarla, perché nessuna scelta dipende più da lei
+(la strategia ha preso un'altra strada, un'altra misura ha reso la domanda inutile) e nessun fatto
+l'ha confermata o smentita, lo stato diventa `decaduta (GG-MM-AAAA): motivo`, con il motivo che
+cita le voci da cui dipende («i pool BTC ed ETH sono fuori, VER-092»). Non nasce un VER. La voce
+resta dov'è, e in «Decadute» aggiungi la riga. Gli esperimenti proposti e i TODO che servivano
+solo a lei si chiudono con lei (`abbandonato`, con il motivo), e le domande alle fonti che la
+riguardavano si tolgono. Se torna a reggere una scelta, torna `da verificare` con una nota datata.
+
 **`risolto DUB-NNN`.** Stato `risolto (GG-MM-AAAA, commit/PR)`, voce nella forma chiusa (il
 dubbio in una o due frasi, come si è chiuso) e spostata in «Risolti». Anche un dubbio `accettato`
 è chiuso: va in «Risolti», con il motivo per cui lo teniamo così. Un dubbio che si rivela una cosa
@@ -147,7 +155,7 @@ Segui la tabella «La propagazione» di METODO.md. In pratica, dopo ogni voce ch
   - ogni cambiamento di una scelta → «Le scelte in vigore», una riga nel registro delle
     modifiche e la data in testa;
   - esperimento **positivo**, o **negativo** su un'alternativa importante → una riga in «Cosa
-    abbiamo imparato»; gli altri esiti negativi, abbandonati e le ipotesi smentite restano nel
+    abbiamo imparato»; gli altri esiti negativi, abbandonati e le ipotesi smentite o decadute restano nel
     registro, e li elenca `registri.py scartate`: non serve ricopiarli;
   - **negativo** su una scelta in vigore, **inconcludente** su una cosa che regge una scelta,
     ipotesi con impatto alto → «Dove potremmo sbagliare» se è fra i cinque rischi più gravi, e
@@ -170,4 +178,5 @@ si fa una volta sola, alla fine del lavoro.
 ## 7. Resoconto
 
 Una riga per voce toccata: `ESP-014 creato (proposto)`, `IP-006 → VER-031 (smentita)`,
+`IP-024 decaduta`,
 `stato_progetto.md § Cosa abbiamo imparato +1`. Non committare.
