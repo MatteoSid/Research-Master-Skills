@@ -7,8 +7,8 @@ comportamento che non sappiamo se è voluto. Non ci vanno le ipotesi sul dominio
 
 Come si scrive una voce (forma a intestazione):
 
-- **ID** `DUB-NNN`, progressivo, mai riusato. Una voce risolta resta qui, in «Risolti», con la
-  spiegazione di come è stata risolta.
+- **ID** `DUB-NNN`, progressivo, mai riusato. Una voce risolta o accettata resta qui, in
+  «Risolti», nella forma chiusa: il dubbio in una o due frasi e come si è chiuso.
 - **Dove:** file e simbolo (funzione, classe, costante), mai il numero di riga, che si sposta alla
   prima modifica del codice.
 - **Dubbio**, **Perché conta** e **Come si risolve** (una proposta, non una decisione).

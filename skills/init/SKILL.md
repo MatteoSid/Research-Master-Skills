@@ -60,6 +60,8 @@ Non chiedere quello che si deduce dal repo.
   "registri": { "dubbi": {"file": "...", "prefisso": "DUB"}, "...": {} },
   "ufficiale": "stato_progetto.md",
   "ufficiale_parole_max": 1500,
+  "voce_parole_max": 400,
+  "riga_parole_max": 250,
   "specchi": [{"path": "frontend/src/docs/", "quando": "cambia una scelta o una soglia"}],
   "vivi": ["fonti/**/*.md", "misure/**/*.md"],
   "percorsi_ignora": [],
@@ -70,6 +72,10 @@ Non chiedere quello che si deduce dal repo.
 
 - `ufficiale_parole_max`: il tetto di parole dell'ufficiale, senza il registro delle
   modifiche (METODO.md, «Il documento ufficiale»); 0 lo toglie.
+- `voce_parole_max`, `riga_parole_max`: il tetto di parole di una voce a intestazione e di una
+  riga di tabella (METODO.md, «Quanto è lunga una voce»). Su un repo che ha già registri con
+  molte voci chiuse e lunghe, proponi di accorciarle una volta per tutte, dopo la fotografia in
+  `storico/registri_<GG-MM-AAAA>/`.
 - `specchi`: i documenti fuori da `dir` che ripetono il contenuto dell'ufficiale e vanno
   aggiornati con lui. Ripetono le scelte a parole; i numeri li leggono dal codice o da un'API.
 - `vivi`: le sottocartelle di `dir` i cui percorsi citati devono esistere; brainstorm e storico

@@ -18,6 +18,9 @@ Come si scrive una voce (forma a intestazione):
   «l'idea regge»: `positivo` è sì, `negativo` è no.
 - **Cosa ne abbiamo tratto:** cosa cambia (`VER-NNN`, scelte del documento ufficiale). Se è
   negativo o abbandonato: **cosa non rifare, e a quali condizioni avrebbe senso riprovare**.
+- Mentre l'esperimento è in corso, le note di ogni giorno vanno nel «Diario» del suo report, non
+  qui. Quando si conclude, la voce si accorcia: Metodo ed Esito in una o due frasi ciascuno,
+  «Cosa ne abbiamo tratto» per intero.
 - **Origine** (facoltativo): il nome che aveva prima, se ne aveva uno («era E7 in …», «TODO-042»).
 - **Stato:** `proposto`, `in corso (#issue)`, `concluso (data)`.
 

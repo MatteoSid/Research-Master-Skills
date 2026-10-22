@@ -77,6 +77,8 @@ il modello è `templates/research-flow.json`). Tutte le chiavi sono facoltative:
 | `registri` | i cinque qui sopra | file e prefisso di ogni registro: un repo che ha già i suoi nomi li tiene |
 | `ufficiale` | `stato_progetto.md` | la versione ufficiale |
 | `ufficiale_parole_max` | `1500` | il tetto di parole dell'ufficiale, senza il registro delle modifiche (`0` = nessun tetto) |
+| `voce_parole_max` | `400` | il tetto di parole di una voce a intestazione (`0` = nessun tetto): oltre, `check` avvisa (`voce-lunga`) |
+| `riga_parole_max` | `250` | il tetto di parole di una riga di tabella (verificato, da_fare) |
 | `specchi` | `[]` | documenti fuori da `dir` che ripetono l'ufficiale e vanno allineati (`path`, `quando`) |
 | `vivi` | `fonti/**`, `misure/**` | sottocartelle in cui i percorsi citati devono esistere |
 | `percorsi_ignora` | `[]` | glob di percorsi citati che non devono esistere: file proposti, file di altri repo |

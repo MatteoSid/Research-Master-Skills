@@ -87,6 +87,19 @@ Per tipo, quello che non deve mancare:
   non lo dà, proponilo tu e faglielo confermare: è l'unico momento in cui si può scrivere onesto.
 - **TODO:** fase, priorità, e il perché con gli ID che chiude.
 
+**Quanto scrivere** (METODO.md, «Quanto è lunga una voce»). Una voce sta sotto il tetto della
+configurazione (`voce_parole_max`, `riga_parole_max`): dice cosa sappiamo e dove sta il resto.
+
+- Una **nota su un esperimento in corso** va nel «Diario» del suo report in `misure/`, datata, non
+  nella voce. Se il report non c'è ancora, aprilo dal modello `templates/report.md` con
+  `**Stato:** in corso`, cita il report nella voce e, se il repo ha un grafo, aggiungilo a
+  `.graphifyignore` finché l'esperimento è in corso. Nella voce entra una riga solo se la nota
+  cambia una decisione.
+- La cella **Stato** di un TODO dice lo stato e l'issue, più al massimo una frase su cosa manca:
+  la storia del lavoro sta nell'issue.
+- Un **elenco di cose piccole** (difetti pagina per pagina, ritocchi al design) è una issue, non
+  una voce: se l'utente vuole tenerne traccia nei registri, un TODO di una riga che la cita.
+
 ## 4. Chiudere una voce
 
 **`esito ESP-NNN`.** È il caso più importante, e il più facile da fare male.
@@ -97,21 +110,31 @@ Per tipo, quello che non deve mancare:
    l'esperimento è stato proposto**, non con quello che ci si aspettava dopo. Se il criterio non
    c'era, dillo nella voce.
 2. Il report deve esistere in `misure/` (modello `templates/report.md`). Se non c'è, scrivilo, o
-   chiedi all'utente dove sta il risultato e scrivilo nel campo Report: senza, `check` avvisa.
+   chiedi all'utente dove sta il risultato e scrivilo nel campo Report: senza, `check` avvisa. Se
+   era aperto `in corso`, completalo: la risposta in testa, lo stato tolto, il «Diario» resta; se
+   il report era in `.graphifyignore` (METODO.md, «Graphify»), toglilo da lì.
 3. «Cosa ne abbiamo tratto»: cosa cambia, e per un esito negativo o abbandonato **cosa non
    rifare e a quali condizioni avrebbe senso riprovare**. Non addolcire un fallimento: «non
    funziona con questi dati per questo motivo» è l'informazione che serve.
-4. Sposta la voce in «Conclusi», stato `concluso (GG-MM-AAAA)`.
+4. Accorcia la voce nella forma chiusa (METODO.md, «Quanto è lunga una voce»): il Metodo in una
+   o due frasi che rimandano al report, l'Esito con la parola e i numeri che decidono, «Cosa ne
+   abbiamo tratto» per intero. Prima di togliere una frase controlla che stia nel report; se non
+   c'è, spostala lì.
+5. Sposta la voce in «Conclusi», stato `concluso (GG-MM-AAAA)`.
 
 **Ipotesi confermata o smentita.** Nasce una voce `VER-NNN` (`registri.py next verificato`) che
 dice «**Confermata** (era IP-NNN)» o «**Smentita** (era IP-NNN)», con la fonte. Lo stato
 dell'ipotesi diventa `→ VER-NNN`; la voce resta dov'è con il suo testo, e in «Smentite o
 confermate» aggiungi la riga. Mai cancellare l'ipotesi.
 
-**`risolto DUB-NNN`.** Stato `risolto (GG-MM-AAAA, commit/PR)`, una riga su come, voce spostata
-in «Risolti». `accettato` invece resta fra gli aperti, con il motivo per cui lo teniamo così.
+**`risolto DUB-NNN`.** Stato `risolto (GG-MM-AAAA, commit/PR)`, voce nella forma chiusa (il
+dubbio in una o due frasi, come si è chiuso) e spostata in «Risolti». Anche un dubbio `accettato`
+è chiuso: va in «Risolti», con il motivo per cui lo teniamo così. Un dubbio che si rivela una cosa
+piccola, che non cambia un risultato, si chiude `accettato` con il motivo e la issue che segue la
+correzione.
 
-**`fatto TODO-NNN`.** La riga si sposta nella tabella «Fatto» con l'issue o la PR e la data.
+**`fatto TODO-NNN`.** La riga si accorcia a una frase e si sposta nella tabella «Fatto», con
+l'issue o la PR e la data: la storia del lavoro sta nell'issue.
 
 ## 5. Propaga
 

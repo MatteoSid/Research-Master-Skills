@@ -44,6 +44,10 @@ DEFAULT_CONFIG = {
     "ufficiale": "stato_progetto.md",
     # il tetto di parole dell'ufficiale, senza il registro delle modifiche (0 = nessun tetto)
     "ufficiale_parole_max": 1500,
+    # il tetto di parole di una voce a intestazione e di una riga di tabella (0 = nessun tetto):
+    # il dettaglio sta nel report o nell'issue, e una voce chiusa si accorcia
+    "voce_parole_max": 400,
+    "riga_parole_max": 250,
     # i campi obbligatori delle voci scritte come intestazione (### ID · titolo)
     "campi": {
         "dubbi": ["Dove", "Stato"],
@@ -52,9 +56,11 @@ DEFAULT_CONFIG = {
     },
     # dove si cercano le citazioni: glob relativi alla radice del repo
     "scansione": ["**/*.md", "**/*.py", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.sql", "**/*.yml"],
+    # storico/ ha le fotografie dei documenti, anche dei registri interi: le sue citazioni
+    # raddoppierebbero quelle di `find`, e i suoi ID non si controllano
     "escludi": [
         ".git/**", "**/node_modules/**", "graphify-out/**", "**/dist/**", "**/build/**",
-        "**/.venv/**", "**/venv/**", "**/__pycache__/**",
+        "**/.venv/**", "**/venv/**", "**/__pycache__/**", "**/storico/**",
     ],
     # prefissi citati come ID ma definiti altrove (issue, sistemi esterni): non sono errori
     "prefissi_esterni": [],
@@ -372,7 +378,7 @@ def aperta(v: Voce) -> bool:
     if v.tipo == "verificato":
         return False
     s = norm_stato(v.stato) if v.stato else ""
-    if s.startswith(("risolto", "fatto", "concluso")) or s == "→ VER":
+    if s.startswith(("risolto", "accettato", "fatto", "concluso")) or s == "→ VER":
         return False
     sez = v.sezione.lower()
     return not any(k in sez for k in ("risolt", "fatt", "conclus", "smentite o confermate"))
@@ -513,8 +519,8 @@ def controlla(root: Path, cfg: dict) -> list[Problema]:
             continue
         s = norm_stato(v.stato)
         sez = v.sezione.lower()
-        if s.startswith("risolto") and "risolt" not in sez:
-            P.append(Problema("avviso", "sezione", f"{v.file}:{v.riga}", f"{v.id} è risolto ma sta in «{v.sezione}»"))
+        if s.startswith(("risolto", "accettato")) and "risolt" not in sez:
+            P.append(Problema("avviso", "sezione", f"{v.file}:{v.riga}", f"{v.id} è {s.split()[0]} ma sta in «{v.sezione}»"))
         if s.startswith("fatto") and "fatt" not in sez:
             P.append(Problema("avviso", "sezione", f"{v.file}:{v.riga}", f"{v.id} è fatto ma sta in «{v.sezione}»"))
         if s.startswith("concluso") and "conclus" not in sez:
@@ -596,7 +602,23 @@ def controlla(root: Path, cfg: dict) -> list[Problema]:
         if RIGA_RE.search(testo_doc) and not COMMIT_RE.search("\n".join(testo_doc.splitlines()[:25])):
             P.append(Problema("avviso", "righe-senza-commit", str(doc.relative_to(root)), "cita numeri di riga senza «**Commit:** `<hash>`» in testa: le righe valgono per quel commit"))
 
-    # 13. grafo vecchio
+    # 13. voci troppo lunghe: un avviso per registro, con le più lunghe in testa
+    for tipo, reg in cfg["registri"].items():
+        lunghe = []
+        for v in voci:
+            if v.tipo != tipo:
+                continue
+            tetto_v = cfg.get("voce_parole_max" if v.forma == "intestazione" else "riga_parole_max") or 0
+            n = parole(v.titolo + " " + v.testo) if v.forma == "intestazione" else parole(v.testo)
+            if tetto_v and n > tetto_v:
+                lunghe.append((n, v.id, tetto_v))
+        if lunghe:
+            lunghe.sort(reverse=True)
+            elenco = ", ".join(f"{i}: {n}" for n, i, _ in lunghe[:6]) + ("…" if len(lunghe) > 6 else "")
+            tetti = sorted({t for _, _, t in lunghe})
+            P.append(Problema("avviso", "voce-lunga", f"{cfg['dir']}/{reg['file']}", f"{len(lunghe)} voci oltre {'/'.join(map(str, tetti))} parole ({elenco}): il dettaglio va nel report o nell'issue, le chiuse nella forma chiusa"))
+
+    # 14. grafo vecchio
     for rel in stale(root, cfg):
         P.append(Problema("avviso", "graphify", rel, "cambiato dopo l'ultimo aggiornamento del grafo"))
     return P
