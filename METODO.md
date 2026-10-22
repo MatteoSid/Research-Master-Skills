@@ -110,7 +110,9 @@ controllo si lancia prima di una PR verso il branch principale che tocca i regis
 
 ```
 ipotesi   da verificare ──► in verifica (ESP-NNN) ──► → VER-NNN  (confermata o smentita)
-                                                        │
+              │                    │
+              └────────────────────┴───► decaduta (data): motivo  (non serve più verificarla)
+
 esperimenti   proposto ──► in corso (#issue) ──► concluso (data), Esito: positivo | negativo
                     │                                             inconcludente | abbandonato
                     └──────────────► concluso (data), Esito: abbandonato  (con il motivo)
@@ -122,6 +124,12 @@ da_fare   da fare ──► in corso (#issue) ──► fatto (#issue, data)
 - **Un'ipotesi non si cancella quando si chiude**: nasce una voce `VER-NNN` che dice «era
   IP-NNN» e riporta se è confermata o **smentita**, e lo stato dell'ipotesi diventa
   `→ VER-NNN`. In fondo al file delle ipotesi, in «Smentite o confermate», una riga la ricorda.
+- **Un'ipotesi che non serve più verificare decade.** Succede quando nessuna scelta dipende più da
+  lei (la strategia ha preso un'altra strada, un'altra misura ha reso la domanda inutile) e nessun
+  fatto l'ha confermata o smentita. Lo stato diventa `decaduta (data): motivo`, con il motivo
+  obbligatorio, e in fondo al file, in «Decadute», una riga la ricorda. Non nasce un VER, perché
+  non sappiamo se era vera: per questo una decaduta non si cita mai come un fatto. Se torna a
+  reggere una scelta, torna `da verificare` con una nota datata che dice perché.
 - **Un esperimento concluso ha sempre un esito**, e l'esito è una delle quattro parole. Il campo
   «Cosa ne abbiamo tratto» dice cosa cambia e, se è negativo, **cosa non rifare e a quali
   condizioni avrebbe senso riprovare** (con più dati, con un'altra definizione…).
@@ -162,7 +170,7 @@ quello che serve a chi la ritrova fra sei mesi:
 | esperimenti | Domanda; Metodo in una o due frasi (dati, script, criterio) che rimandano al report; Esito: la parola e i numeri che decidono, in una o due frasi; **Cosa ne abbiamo tratto, per intero**, perché è quello che impedisce di rifare l'errore; Report; Tocca e Origine se ci sono; Stato |
 | dubbi | Dove; il dubbio in una o due frasi; come si è chiuso (cosa è cambiato, con la PR o il commit, o perché lo accettiamo); Stato |
 | da_fare | una riga: cosa, in una frase, e `fatto (#issue, data)` |
-| ipotesi | resta com'è: la conclusione sta nel VER che la chiude |
+| ipotesi | resta com'è: la conclusione sta nel VER che la chiude, o nel motivo della decaduta |
 
 Il registro verificato non si chiude: una voce è già un fatto in una riga, e vale il tetto delle
 righe. Una voce chiusa vale per il commit della sua chiusura, e accorciandola i riferimenti non si
@@ -186,8 +194,9 @@ timeout interrompe operazioni che sarebbero andate a buon fine?» (dove «sì» 
 notizia), ma «il timeout interrompe solo operazioni che sarebbero fallite comunque?». Un
 `positivo` deve sempre poter finire in «Cosa abbiamo imparato».
 
-Ogni esito `negativo`, `abbandonato` e `inconcludente`, e ogni ipotesi smentita, resta nel suo
-registro, e `registri.py scartate` li elenca tutti con cosa ne abbiamo tratto: **è l'elenco che
+Ogni esito `negativo`, `abbandonato` e `inconcludente`, e ogni ipotesi smentita o decaduta, resta
+nel suo registro, e `registri.py scartate` li elenca tutti con cosa ne abbiamo tratto (per una
+decaduta, il suo motivo): **è l'elenco che
 impedisce di rifare lo stesso errore**, e non si ricopia nell'ufficiale. Nell'ufficiale un esito
 negativo entra solo se conta per chi legge, e il posto dipende da cosa metteva alla prova:
 
@@ -258,6 +267,7 @@ un passo che non serve si salta, ma si salta sapendolo.
 | si propone un esperimento | esperimenti (`proposto`, con domanda, metodo e criterio); le ipotesi che verifica passano a `in verifica (ESP-NNN)` quando parte |
 | parte un esperimento lungo (giorni o settimane) | il report in `misure/` con `**Stato:** in corso`: le note di ogni giorno vanno nel suo «Diario», la voce cita il report |
 | si conclude un esperimento | il report in `misure/`; l'esperimento `concluso` con esito, nella forma chiusa; il fatto in verificato; le ipotesi confermate o smentite; i TODO chiusi o nati; l'ufficiale se cambia una scelta, o se l'esito è fra le cose importanti imparate o fra i rischi («Cosa vuol dire l'esito») |
+| una scelta prende un'altra strada, e voci aperte non reggono più niente | le ipotesi `decaduta (data): motivo`, con la riga in «Decadute»; gli esperimenti proposti che servivano solo a loro `concluso`, Esito `abbandonato` («non serve più»); i TODO che servivano solo a loro chiusi con il motivo; i dubbi `accettato` con il motivo; le domande alle fonti che non servono più tolte |
 | il codice introduce un parametro scelto da noi | ipotesi (con dove lo usiamo nel codice) |
 | lavorando sul codice nasce un dubbio che può cambiare un risultato o una scelta | dubbi, con file e simbolo, **prima** di andare avanti |
 | si chiude una issue | i TODO che chiude passano a «Fatto» e i dubbi che risolve a «Risolti», nella forma chiusa; l'ufficiale se cambia una scelta |

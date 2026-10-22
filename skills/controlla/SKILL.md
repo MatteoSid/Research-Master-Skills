@@ -25,6 +25,7 @@ Exit 1 se c'è almeno un errore. I codici:
 | `id-inesistente` | errore | un ID è citato ma non definito | refuso (correggi la citazione) o voce mai scritta (scrivila con `/research-flow:annota`); se il prefisso è di un sistema esterno, va in `prefissi_esterni` |
 | `ipotesi-chiusa` | errore/avviso | un'ipotesi rimanda a un VER che non esiste, o il VER non la cita | il VER dice «era IP-NNN» |
 | `ipotesi-aperta` | avviso | un VER dice «era IP-NNN» ma l'ipotesi ha ancora lo stato aperto | lo stato dell'ipotesi diventa `→ VER-NNN`, riga in «Smentite o confermate» |
+| `decaduta-senza-motivo` | avviso | un'ipotesi `decaduta` non dice perché | il motivo dopo la data, con le voci da cui dipende: `decaduta (GG-MM-AAAA): motivo`; se non si sa, chiedi all'utente |
 | `esito-mancante` | errore | esperimento concluso senza esito | **non inventarlo**: rileggi il report e il criterio; se non si può decidere, chiedi all'utente |
 | `report-mancante` | avviso | esperimento concluso senza report | cerca il report in `misure/`; se non esiste, dillo all'utente |
 | `campo-mancante` | avviso | a una voce manca un campo obbligatorio | completala se l'informazione si trova (graphify, report, codice), altrimenti segnalala |
@@ -61,6 +62,8 @@ Poi rilancia `check` finché gli errori sono zero.
 Leggili a occhio sulle voci cambiate di recente (`git diff` e `git log -p --since=<ultima
 modifica dell'ufficiale> -- <dir>/`):
 
+- un'ipotesi `decaduta` non è citata come un fatto nell'ufficiale né in una voce aperta: non
+  sappiamo se era vera;
 - gli esperimenti negativi o abbandonati e le ipotesi smentite citati nell'ufficiale stanno
   **nella sezione giusta**: un'alternativa bocciata in «Cosa abbiamo imparato», una scelta in
   vigore messa in dubbio in «Dove potremmo sbagliare»;

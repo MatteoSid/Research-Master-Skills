@@ -9,7 +9,8 @@ decidono cosa scrivere.
     registri.py find IP-003       dove è definita una voce e chi la cita
     registri.py riepilogo         le voci per registro e per stato, in JSON
     registri.py scartate [--json] le strade scartate: esperimenti negativi, abbandonati o
-                                  inconcludenti e ipotesi smentite, con cosa ne abbiamo tratto
+                                  inconcludenti, ipotesi smentite e ipotesi decadute, con cosa
+                                  ne abbiamo tratto
     registri.py check [--json]    i controlli di coerenza; exit 1 se c'è almeno un errore
     registri.py stale             i documenti cambiati dopo l'ultimo aggiornamento di graphify
 
@@ -335,9 +336,15 @@ def prima_frase(testo: str, massimo: int = 220) -> str:
     return frase if len(frase) <= massimo else frase[: massimo - 1].rstrip() + "…"
 
 
+def motivo_decaduta(stato: str) -> str:
+    """Il motivo di un'ipotesi `decaduta (data): motivo`, senza la parola e la data."""
+    s = stato.strip().strip("`*")
+    return re.sub(r"^decaduta\s*(?:\([^)]*\))?\s*[:,;.—–-]?\s*", "", s, flags=re.I).strip()
+
+
 def strade_scartate(cfg: dict, voci: list[Voce]) -> list[dict]:
-    """Esperimenti negativi, abbandonati o inconcludenti e ipotesi smentite: l'elenco completo
-    che l'ufficiale non ripete per intero."""
+    """Esperimenti negativi, abbandonati o inconcludenti, ipotesi smentite e ipotesi decadute:
+    l'elenco completo che l'ufficiale non ripete per intero."""
     out = []
     for v in voci:
         e = esito(v) if v.tipo == "esperimenti" else None
@@ -355,6 +362,10 @@ def strade_scartate(cfg: dict, voci: list[Voce]) -> list[dict]:
             ips = re.findall(rf"era\s+({re.escape(pref_ip)}-\d+)", v.testo)
             if ips:
                 out.append({"id": v.id, "esito": "smentita", "titolo": f"smentisce {', '.join(ips)}", "tratto": prima_frase(v.titolo), "dove": f"{v.file}:{v.riga}"})
+        # un'ipotesi decaduta non ha un VER: il motivo sta nel suo Stato
+        for v in voci:
+            if v.tipo == "ipotesi" and v.stato and norm_stato(v.stato) == "decaduta":
+                out.append({"id": v.id, "esito": "decaduta", "titolo": v.titolo, "tratto": prima_frase(motivo_decaduta(v.stato)), "dove": f"{v.file}:{v.riga}"})
     return out
 
 
@@ -378,10 +389,10 @@ def aperta(v: Voce) -> bool:
     if v.tipo == "verificato":
         return False
     s = norm_stato(v.stato) if v.stato else ""
-    if s.startswith(("risolto", "accettato", "fatto", "concluso")) or s == "→ VER":
+    if s.startswith(("risolto", "accettato", "fatto", "concluso")) or s in ("→ VER", "decaduta"):
         return False
     sez = v.sezione.lower()
-    return not any(k in sez for k in ("risolt", "fatt", "conclus", "smentite o confermate"))
+    return not any(k in sez for k in ("risolt", "fatt", "conclus", "smentite o confermate", "decadut"))
 
 
 def parole(testo: str) -> int:
@@ -485,6 +496,8 @@ def controlla(root: Path, cfg: dict) -> list[Problema]:
         for v in voci:
             if v.tipo != "ipotesi" or not v.stato:
                 continue
+            if norm_stato(v.stato) == "decaduta" and not motivo_decaduta(v.stato):
+                P.append(Problema("avviso", "decaduta-senza-motivo", f"{v.file}:{v.riga}", f"{v.id} è decaduta senza il motivo («decaduta (GG-MM-AAAA): perché non serve più»)"))
             m = ver_re.search(v.stato)
             if not m:
                 continue
