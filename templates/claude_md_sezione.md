@@ -8,6 +8,8 @@ completo nel METODO.md del plugin). In breve:
   `{ufficiale}`. Tutto il resto in sottocartelle per ruolo (`fonti/`, `misure/`, `storico/`…);
 - **gli esperimenti falliti si documentano come quelli riusciti**, con l'esito e cosa non rifare;
 - niente si cancella: una voce chiusa resta con il suo stato, un ID non si riusa;
+- **una voce è corta** (un tetto di parole): le note di un esperimento in corso vanno nel suo
+  report, la storia di un lavoro nell'issue, e chiudendosi una voce si accorcia;
 - **nei registri entra quello che può cambiare una decisione.** Le cose piccole trovate lavorando
   (un commento vecchio, un numero superato, una differenza di forma) si sistemano subito o vanno
   in una issue;

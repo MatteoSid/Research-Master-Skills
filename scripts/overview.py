@@ -200,11 +200,11 @@ def fatto(v) -> bool:
 
 def todo_info(v) -> dict:
     """Priorità, titolo e fase di una voce di da fare: le righe delle fasi hanno la colonna
-    «Pri.», quelle fatte possono cominciare con «Fase N, P0.»."""
+    «Pri.», quelle fatte possono cominciare con «Fase N, P0.» o «Fase N · nome, P0.»."""
     c = celle(v)
     if fatto(v):
         cosa = c[1] if len(c) > 1 else v.titolo
-        m = re.match(r"^Fase (\d)[,.]\s*(P\d)?\.?\s*", cosa)
+        m = re.match(r"^Fase (\d)(?:\s*·\s*[^,.]+)?[,.]\s*(P\d)?\.?\s*", cosa)
         fase = f"Fase {m.group(1)}" if m else "Fatti senza fase"
         return {"pri": m.group(2) if m and m.group(2) else None,
                 "cosa": cosa[m.end():] if m else cosa, "fase": fase,

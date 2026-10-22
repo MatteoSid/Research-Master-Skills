@@ -9,6 +9,8 @@
   },
   "ufficiale": "stato_progetto.md",
   "ufficiale_parole_max": 1500,
+  "voce_parole_max": 400,
+  "riga_parole_max": 250,
   "specchi": [],
   "vivi": ["fonti/**/*.md", "misure/**/*.md"],
   "percorsi_ignora": [],

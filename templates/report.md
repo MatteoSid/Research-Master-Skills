@@ -4,6 +4,9 @@
 
 Esperimento: ESP-NNN. Voci toccate: IP-NNN, …
 
+**Stato:** in corso (solo mentre l'esperimento è aperto: le note vanno in «Diario», e la risposta
+in testa si scrive quando si conclude)
+
 **Commit:** `<hash>` (il codice e gli script su cui si è misurato: le righe citate valgono per questo
 commit, e non si riallineano)
 
@@ -27,3 +30,8 @@ Cosa questa misura non dice; su quali dati non vale; cosa la potrebbe ribaltare.
 
 Le voci aggiornate (VER-NNN nuove, IP chiuse, TODO nati o chiusi) e le scelte del documento
 ufficiale che cambiano, o il motivo per cui non cambiano.
+
+## Diario
+
+Solo per un esperimento lungo: le note mentre è in corso, le più vecchie in alto, ognuna con
+data e ora (`### 13-10-2026, la prima riscelta`). Restano anche dopo la conclusione.

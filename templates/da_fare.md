@@ -8,10 +8,11 @@ Come si scrive una voce (forma a tabella):
 - **ID** `TODO-NNN`, progressivo, mai riusato.
 - **Cosa**, **Perché** (quale ipotesi verifica, quale dubbio chiude, quale rischio riduce:
   citare `IP-NNN`, `DUB-NNN`, `ESP-NNN`), **Stato**: `da fare`, `in corso (#issue)`,
-  `fatto (#issue, data)`.
+  `fatto (#issue, data)`. Lo Stato dice lo stato e l'issue, più al massimo una frase su cosa
+  manca: la storia del lavoro sta nell'issue.
 - Priorità: **P0** blocca le fasi successive, **P1** serve prima del traguardo, **P2** migliora.
-- Una voce fatta si sposta in «Fatto» in fondo, con l'issue che l'ha chiusa: serve a sapere
-  cosa c'è già senza rileggere la storia di git.
+- Una voce fatta si sposta in «Fatto» in fondo, in una riga, con l'issue che l'ha chiusa: serve
+  a sapere cosa c'è già senza rileggere la storia di git.
 
 ---
 

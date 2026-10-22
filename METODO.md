@@ -11,7 +11,8 @@ si va avanti. Il fallimento invece si toglie dal codice, e se nessuno lo scrive 
 qualcuno rifarà lo stesso esperimento, o peggio lo darà per riuscito. Tutto il resto viene da qui:
 
 - **niente si cancella.** Una voce chiusa resta con il suo stato e il motivo per cui è chiusa;
-  un ID non si riusa mai;
+  un ID non si riusa mai. Resta la voce, non tutte le sue parole: chiudendosi si accorcia, e il
+  dettaglio sta nel report, nell'issue e nella storia di git («Quanto è lunga una voce»);
 - **ogni affermazione ha uno stato**: è un fatto verificato, un'ipotesi, un dubbio, un lavoro
   da fare, o il risultato di un esperimento. Nel documento ufficiale non c'è niente che non si
   ritrovi in un registro;
@@ -69,7 +70,9 @@ Dentro `dir` i percorsi si scrivono **relativi a `dir`** (`misure/report_x_2026-
 | «Prima o poi bisogna…» | da_fare |
 | «Non abbiamo capito perché…» | ipotesi se c'è una spiegazione candidata da verificare, altrimenti un esperimento proposto se si può indagare; se pesa sulle scelte, un rischio in ufficiale § «Dove potremmo sbagliare» |
 | «Da adesso facciamo così» | ufficiale § «Le scelte in vigore», con una riga nel registro delle modifiche |
+| «Oggi l'esperimento in corso ha dato…», una nota a test aperto | il report dell'esperimento in `misure/`, aperto quando l'esperimento parte: **non nella voce** |
 | «Questo commento è vecchio», «questo numero è superato», «qui la forma è diversa dal design» | si sistema subito, nello stesso lavoro, o va in una issue del tracker: **non nei registri** |
+| un elenco di ritocchi o di difetti piccoli (pagina per pagina, file per file) | una issue del tracker, con l'elenco; nei registri al massimo un TODO di una riga che la cita |
 
 Se una cosa ne tocca più di uno, va in tutti, e le voci si citano a vicenda per ID.
 
@@ -125,7 +128,46 @@ da_fare   da fare ──► in corso (#issue) ──► fatto (#issue, data)
   `inconcludente` non è un fallimento da nascondere: dice che i dati non bastano, e di solito
   genera un TODO.
 - Le voci chiuse si spostano nella sezione dei chiusi del loro registro («Risolti», «Conclusi»,
-  «Fatto»), le più recenti in alto.
+  «Fatto»), le più recenti in alto, e si accorciano nella forma chiusa («Quanto è lunga una
+  voce»). Un dubbio `accettato` è chiuso come uno risolto: va in «Risolti», con il motivo per cui
+  lo teniamo così.
+
+### Quanto è lunga una voce
+
+Una voce si legge in un minuto. È la scheda che dice cosa sappiamo e dove sta il resto, non il
+posto del lavoro: ogni `registri.py find`, ogni `grep` che la tocca e ogni sessione che apre il
+registro se la porta dietro intera. I tetti stanno nella configurazione: `voce_parole_max` (400
+di default) per le voci a intestazione, `riga_parole_max` (250) per le righe di tabella, e
+`registri.py check` avvisa sopra il tetto (`voce-lunga`). Sono tetti, non obiettivi: una voce
+chiusa ne usa molte meno.
+
+Il dettaglio ha già un posto suo:
+
+- **le note di un esperimento in corso** (misure intermedie, decisioni prese strada facendo,
+  episodi) vanno nel suo report in `misure/`, che si apre quando l'esperimento parte, con
+  `**Stato:** in corso` in testa e le note datate nella sezione «Diario». La voce tiene domanda,
+  criterio, un metodo breve, lo stato e il link al report; se una nota cambia una decisione, la
+  voce lo dice in una riga che rimanda al report;
+- **la storia di un lavoro** (cosa è stato rilasciato, quando, con quale backup) sta nell'issue o
+  nella PR. La cella **Stato** di un TODO dice lo stato e l'issue (`in corso (#92)`, `fatto (#99,
+  02-10-2026)`), più al massimo una frase su cosa manca;
+- **un elenco di cose piccole** sta in una issue («Cosa entra nei registri, e cosa no»).
+
+**La forma chiusa.** Quando una voce si chiude si accorcia. Prima si controlla che quello che si
+toglie stia nel report, nell'issue o nella PR, e se non c'è si sposta lì; poi la voce tiene solo
+quello che serve a chi la ritrova fra sei mesi:
+
+| Registro | La voce chiusa tiene |
+|---|---|
+| esperimenti | Domanda; Metodo in una o due frasi (dati, script, criterio) che rimandano al report; Esito: la parola e i numeri che decidono, in una o due frasi; **Cosa ne abbiamo tratto, per intero**, perché è quello che impedisce di rifare l'errore; Report; Tocca e Origine se ci sono; Stato |
+| dubbi | Dove; il dubbio in una o due frasi; come si è chiuso (cosa è cambiato, con la PR o il commit, o perché lo accettiamo); Stato |
+| da_fare | una riga: cosa, in una frase, e `fatto (#issue, data)` |
+| ipotesi | resta com'è: la conclusione sta nel VER che la chiude |
+
+Il registro verificato non si chiude: una voce è già un fatto in una riga, e vale il tetto delle
+righe. Una voce chiusa vale per il commit della sua chiusura, e accorciandola i riferimenti non si
+riallineano. Un progetto che adotta questa regola con molte voci chiuse e lunghe le accorcia una
+volta per tutte, dopo aver salvato la fotografia dei registri in `storico/registri_<GG-MM-AAAA>/`.
 
 ### Cosa vuol dire l'esito
 
@@ -214,10 +256,11 @@ un passo che non serve si salta, ma si salta sapendolo.
 |---|---|
 | arriva un'informazione da una fonte | se la fonte è nuova, la sua riga nell'indice `fonti/README.md`; il file in `fonti/` con il testo originale; i fatti in verificato; le ipotesi che tocca (confermate → VER, indebolite o rafforzate → nota); la domanda tolta da da_fare «Da chiedere a…»; l'ufficiale se cambia una scelta |
 | si propone un esperimento | esperimenti (`proposto`, con domanda, metodo e criterio); le ipotesi che verifica passano a `in verifica (ESP-NNN)` quando parte |
-| si conclude un esperimento | il report in `misure/`; l'esperimento `concluso` con esito; il fatto in verificato; le ipotesi confermate o smentite; i TODO chiusi o nati; l'ufficiale se cambia una scelta, o se l'esito è fra le cose importanti imparate o fra i rischi («Cosa vuol dire l'esito») |
+| parte un esperimento lungo (giorni o settimane) | il report in `misure/` con `**Stato:** in corso`: le note di ogni giorno vanno nel suo «Diario», la voce cita il report |
+| si conclude un esperimento | il report in `misure/`; l'esperimento `concluso` con esito, nella forma chiusa; il fatto in verificato; le ipotesi confermate o smentite; i TODO chiusi o nati; l'ufficiale se cambia una scelta, o se l'esito è fra le cose importanti imparate o fra i rischi («Cosa vuol dire l'esito») |
 | il codice introduce un parametro scelto da noi | ipotesi (con dove lo usiamo nel codice) |
 | lavorando sul codice nasce un dubbio che può cambiare un risultato o una scelta | dubbi, con file e simbolo, **prima** di andare avanti |
-| si chiude una issue | i TODO che chiude passano a «Fatto»; i dubbi che risolve a «Risolti»; l'ufficiale se cambia una scelta |
+| si chiude una issue | i TODO che chiude passano a «Fatto» e i dubbi che risolve a «Risolti», nella forma chiusa; l'ufficiale se cambia una scelta |
 | cambia una scelta | l'ufficiale (§ «Le scelte in vigore» e registro delle modifiche); i documenti specchio (`specchi` nella configurazione) |
 
 ## Il documento ufficiale
@@ -283,6 +326,10 @@ insieme a `storico/`:
   scartate` le strade scartate;
 - il grafo non distingue una scelta superata da una in vigore, e cerca per parole, non per
   significato.
+
+Per la stessa ragione **un report in corso**, con il «Diario» che cresce ogni giorno, sta in
+`.graphifyignore` finché l'esperimento non si conclude: alla conclusione si toglie dall'elenco e il
+report si estrae una volta.
 
 `registri.py stale` salta i file esclusi da `.graphifyignore`. Nel lavoro sulle voci:
 
